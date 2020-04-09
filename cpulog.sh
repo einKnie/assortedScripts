@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Collect CPU usage data from a process and plot resulting data
 # version 1.1
 # author  einKnie@gmx.at
