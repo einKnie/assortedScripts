@@ -19,7 +19,7 @@ declare -A CONN
 function check_dependencies {
   which nmcli &> /dev/null
   if [ $? -eq 1 ]; then
-    echo "error: nmcli is not installed."
+    log_error "nmcli is not installed."
     exit 1
   fi
 }
@@ -28,6 +28,10 @@ function log_debug() {
   if [ $DEBUG -eq 1 ]; then
     echo $1
   fi
+}
+
+function log_error() {
+  echo "error: $1"
 }
 
 function show_dns {
@@ -44,14 +48,17 @@ function get_op {
   OP=0
   while [ $OP -eq 0 ]; do
     echo
-    echo "Add nameserver    ... 1"
-    echo "Remove nameserver ... 2"
+    echo " - - - - - - - - - - - - - - - - "
+    echo "|  Add nameserver    ... 1     |"
+    echo "|  Remove nameserver ... 2     |"
     if check_auto_dns; then
-      echo "Disable auto DNS  ... 3"
+      echo "|  Disable auto DNS  ... 3     |"
     else
-      echo "Enable auto DNS   ... 3"
+      echo "|  Enable auto DNS   ... 3     |"
     fi
-    echo "Finished          ... ENTER"
+    echo "|  Finished          ... ENTER |" 
+    echo " - - - - - - - - - - - - - - - - "
+    echo
     read -p "Choose operation: " INPUT
 
     case "$INPUT" in
@@ -77,7 +84,7 @@ function get_op {
 function get_nameserv {
   read -p "Enter nameserver address: " NAMESERV
   if [ "$NAMESERV" == "" ]; then
-    echo "Error: No data got"
+    log_error "No data got"
     return 1
   fi
 
@@ -85,10 +92,10 @@ function get_nameserv {
   echo "Checking nameserver address..."
   ping -c 1 -I ${CONN[dev]} $NAMESERV &> /dev/null
   if [ $? -eq 1 ]; then
-    echo "Cannot reach DNS server at $NAMESERV."
+    log_error "Cannot reach DNS server at $NAMESERV."
     return 1
   else
-    echo "address pingable"
+    log_debug "address pingable"
   fi
   return 0
 }
@@ -130,14 +137,6 @@ function con_restart {
 function get_uuid_from_dev() {
   TMP=$(nmcli -f CONNECTIONS dev show $1)
   echo $TMP
-}
-
-# put uuid and device of alle active connections in a map
-function get_active_conns {
-  while read LINE ; do
-    DAT=($(echo $LINE | sed -r 's/^.*\s([a-fA-F0-9-]+)\s.*\s([a-zA-Z0-9]+)$/\1 \2/'))
-    MAP[${DAT[0]}]=${DAT[1]}
-  done <<<$(nmcli con show --active | grep -v NAME) 
 }
 
 # list active connections and let user choose one
@@ -187,13 +186,12 @@ if [ $# -lt 1 ]; then
   :
 else
   echo "Got argument: " $1
-  get_uuid_from_dev $1
+
 fi
 
 # let user choose a connection to modify
 choose_conn
 
-echo "So you want to use the old ${CONN[dev]} with your ${CONN[uuid]} connection, is that it?"
 log_debug "Connection UUID:  ${CONN[uuid]}"
 log_debug "Interface:        ${CONN[dev]}"
 
@@ -214,40 +212,39 @@ while [ $OP -ne 8 ]; do
   # do operation
   case $OP in
     1)
-      echo "Adding nameserver"
       get_nameserv
       if [ $? -eq 0 ]; then
         add_nameserv
+        echo "Done"
       else
-        echo "error: failed to add nameserver"
+        log_error "Failed to add nameserver"
       fi
       ;;
     2)
       # remove nameserver
-      echo "Removing nameserver"
       get_nameserv
       if [ $? -eq 0 ]; then
         remove_nameserv
-      else
-        echo "error: failed to remove nameserver"
+        echo "Done"
+     else
+        log_error "Failed to remove nameserver"
       fi
       ;;
     3)
       # disable auto dns
       if check_auto_dns; then
-        echo "Disabling auto dns"
         auto_dns_off
       else
-        echo "Enabling auto dns"
         auto_dns_on
       fi
+      echo "Done"
       ;;
     8)
       echo "Completing settings..."
       ;;
     *)
-      log_debug "invalid operation"
-      exit 1
+      echo "Invalid input"
+      exit 1 # ok to exit here since if that actully happens we have bigger problems
       ;;
   esac
 done
