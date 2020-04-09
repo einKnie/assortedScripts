@@ -18,7 +18,7 @@ The visualisation of the collected data with gnuplot is built in.
                    |   If the file exists, you have the option to plot it
                    |   instead of collecting data.  
                    
--a, --appname      |   set target by name   
+-n, --name         |   set target by name   
 
 -p, --pid          |   set target by pid 
   
