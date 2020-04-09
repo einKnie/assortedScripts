@@ -32,3 +32,10 @@ The visualisation of the collected data with gnuplot is built in.
 -h, --help         |   show this help message
 ```  
 ---
+
+### [setdns.sh](setdns.sh)
+
+The script provides an interface to add or remove DNS entries from the current active network connection, using nmcli.  
+No parameters, the script is interactive.
+
+---
