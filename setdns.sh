@@ -13,7 +13,6 @@ DEBUG=0
 OP=0
 
 # common variables
-declare -A MAP
 declare -A CONN
 
 function check_dependencies {
@@ -143,6 +142,7 @@ function get_uuid_from_dev() {
 function choose_conn {
   I=0
   LIST=""
+  declare -A MAP
   declare -A KEYMAP
 
   # get all active connections and assemble maps
