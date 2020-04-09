@@ -5,7 +5,7 @@ I will probably add to it over time.
 
 ## Content
 
-### [log_cpu.sh](log_cpu.sh)
+### [cpulog.sh](cpulog.sh)
 
 The script collects CPU usage of a single process continuously, until stopped with `ctrl-c`.
 The visualisation of the collected data with gnuplot is built in.
