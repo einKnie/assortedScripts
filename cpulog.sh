@@ -1,3 +1,7 @@
+# Collect CPU usage data from a process and plot resulting data
+# version 1.0
+# author  einKnie@gmx.at
+
 # internal flags
 RUN=1
 DEBUG=0
@@ -86,7 +90,7 @@ function get_name_from_pid {
 }
 
 function get_pid_from_name {
-  pid=$(pgrep -xi $APP)
+  pid=$(pgrep -xi $APP 2> /dev/null)
   if [ $(grep -c . <<<$pid) -gt 1 ]; then
     log_error "Found more than one process of the name $APP. Please provide the PID"
     ERROR=$((ERROR+1))
@@ -146,7 +150,11 @@ while (( "$#" )); do
 done
 
 # verify arguments and get APP && PID
-if [ $SETPID -eq 0 ] && [ "$APP" != "" ]; then
+if [ "$APP" == "" ] && [ $PID -eq 0 ]; then
+  log_error "Need either target name or pid"
+  print_usage
+  exit 
+elif [ $SETPID -eq 0 ] && [ "$APP" != "" ]; then
   log_error "Cannot specify target by name and pid"
   print_usage
   exit 1
