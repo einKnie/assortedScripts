@@ -7,7 +7,7 @@ I will probably add to it over time.
 
 ### [cpulog.sh](cpulog.sh)
 
-The script collects CPU usage of a single process continuously, until stopped with `ctrl-c`.
+The script collects CPU usage of a single process continuously, until stopped with `ctrl-c`.  
 The visualisation of the collected data with gnuplot is built in.
 
 ##### Usage
@@ -25,7 +25,8 @@ The visualisation of the collected data with gnuplot is built in.
 -c, --comment      |   an optional title appendix for the generated plot
                    |   for exmple "while playing a video"
                        
--x                 |   don't do anything, just print the configuration 
+-a                 |   automatic mode. overwrite file and plot data without prompt
+-x                 |   what-if mode, just print the configuration 
                    |   that resulted from your other parameters
                        
 -h, --help         |   show this help message
