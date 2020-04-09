@@ -1,5 +1,5 @@
 # Collect CPU usage data from a process and plot resulting data
-# version 1.0
+# version 1.1
 # author  einKnie@gmx.at
 
 # internal flags
@@ -8,17 +8,19 @@ DEBUG=0
 ERROR=0
 CONFIG=0
 PLOT=1
+SETPID=1
+AUTO=0
 
 # config
 FILE="/tmp/generic.log"
 APP=""
 PID=0
-SETPID=1
 COMMENT=""
 
+# FUNCTIONS
+# --------
 
-
-function on_break {
+function on_abort {
   RUN=0
   log_debug "Measure aborted"
 }
@@ -42,7 +44,7 @@ function plot() {
   gnuplot -p << END
     set title "CPU Usage of $APP $COMMENT"
     set yrange [0.0:100.0]
-    set xlabel "time [m:s]"
+    set xlabel "time [h:m:s]"
     set ylabel "CPU load caused by $APP [%]"
     set timefmt "%s "
     set xdata time
@@ -60,10 +62,11 @@ function print_usage {
   echo
   echo "-f | --file <filename>  ... output file [default: /tmp/generic.log]"
   echo "                            if the file exists, you have the option to plot it"
-  echo "-a | --appname <name>   ... set target by name"
+  echo "-n | --name <name>      ... set target by name"
   echo "-p | --pid <pid>        ... set target by pid"
   echo "-c | --comment <string> ... an optional title appendix for the graph"
   echo "                            for example, 'while playing a video'"
+  echo "-a                      ... automatic mode. Files are overwritten and data is plotted."
   echo "-x                      ... don't do anything, just print the config"
   echo "                            that resulted from your parameters"
   echo "-h | --help             ... show this help message"
@@ -113,6 +116,9 @@ function check_dependencies {
   fi
 }
 
+# SCRIPT START
+# -----------
+
 # get arguments
 while (( "$#" )); do
   case "$1" in
@@ -120,7 +126,7 @@ while (( "$#" )); do
       FILE=$2
       shift 2
       ;;
-    -a | --appname)
+    -n | --name)
       APP=$2
       shift 2
       ;;
@@ -132,6 +138,10 @@ while (( "$#" )); do
     -c | --comment)
       COMMENT=$2
       shift 2
+      ;;
+    -a)
+      AUTO=1
+      shift 1
       ;;
     -h | --help)
       print_usage
@@ -155,7 +165,7 @@ if [ "$APP" == "" ] && [ $PID -eq 0 ]; then
   print_usage
   exit 
 elif [ $SETPID -eq 0 ] && [ "$APP" != "" ]; then
-  log_error "Cannot specify target by name and pid"
+  log_error "Need either target name or pid, not both"
   print_usage
   exit 1
 elif [ $SETPID -eq 0 ]; then
@@ -182,20 +192,23 @@ fi
 check_dependencies
 
 # if file exists, ask to plot instead of collecting new data
-if [ -f $FILE ]; then
-  echo "I see that '$FILE' already exists."
-  if [ $PLOT -eq 0 ]; then
-    read -p "Overwrite file? [y/N]" INPUT
-    if [ "$INPUT" == "y" ] || [ "$INPUT" == "Y" ]; then
-      :
+# auto mode skips this step
+if [ $AUTO -eq 0 ]; then
+  if [ -f $FILE ]; then
+    echo "I see that '$FILE' already exists."
+    if [ $PLOT -eq 0 ]; then
+      read -p "Overwrite file? [y/N]" INPUT
+      if [ "$INPUT" == "y" ] || [ "$INPUT" == "Y" ]; then
+        :
+      else
+        exit 0
+      fi
     else
-      exit 0
-    fi
-  else
-    read -p "Plot the old file? [y/N] " INPUT
-    if [ "$INPUT" == "y" ] || [ "$INPUT" == "Y" ]; then
-      plot
-      exit 0
+      read -p "Plot the old file? [y/N] " INPUT
+      if [ "$INPUT" == "y" ] || [ "$INPUT" == "Y" ]; then
+        plot
+        exit 0
+      fi
     fi
   fi
 fi
@@ -207,7 +220,7 @@ if [ $DEBUG -eq 0 ]; then
   touch $FILE
 fi
 
-trap on_break SIGINT
+trap on_abort SIGINT
 echo "Collecting data..."
 echo "(stop collecting with CTRL-C)"
 
@@ -219,11 +232,15 @@ while [ $RUN -eq 1 ]; do
 done
 
 # ask to plot collected data
-if [ $PLOT -eq 1 ]; then
-  read -p "Plot data? [y/N] " INPUT
-  if [ "$INPUT" == "y" ] || [ "$INPUT" == "Y" ]; then
-    plot
+if [ $AUTO -eq 0 ]; then
+  if [ $PLOT -eq 1 ]; then
+    read -p "Plot data? [y/N] " INPUT
+    if [ "$INPUT" == "y" ] || [ "$INPUT" == "Y" ]; then
+      plot
+    fi
   fi
+else
+  plot
 fi
 
 echo 
