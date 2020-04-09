@@ -222,6 +222,7 @@ if [ $DEBUG -eq 0 ]; then
   touch $FILE
 fi
 
+# trap sigint to abort data collection
 trap on_abort SIGINT
 echo "Collecting data..."
 echo "(stop collecting with CTRL-C)"
@@ -232,6 +233,9 @@ while [ $RUN -eq 1 ]; do
     top -b  -p $PID -n1 | grep -i $PID | sed -r 's/^.*[^0-9]([0-9]+\.[0-9]+)\s*[0-9]+\.[0-9]+\s*.*$/\1/' >> $FILE
     sleep 1
 done
+
+# untrap
+trap - SIGINT
 
 # ask to plot collected data
 if [ $AUTO -eq 0 ]; then
