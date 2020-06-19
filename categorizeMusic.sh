@@ -21,22 +21,28 @@
 # - track number: file is stored under 'artist/album/<original filename>'
 
 DEBUG=0
-IS_DIR=0
 COPY=0
+WHATIF=0
 
 DEFAULT_ARTIST="various"
 DEFAULT_ALBUM="other"
 
 DEST=""
+SRC=""
 FORMATS="mp3 wma wav"
 
 function print_help {
   echo "Usage"
-  echo "  $0 <audio file or directory> [destination folder]"
+  echo "  $0 [options]"
+  echo " -s | --source      ... source folder"
+  echo " -o | --output-dir  ... destination folder"
+  echo " -w | --what-if     ... what-if mode. don't copy files, just print what would have been copied"
+  echo " -v | --verbose     ... log debug messages"
+  echo " -h | --help        ... show this message"
   echo
   echo " ~~ IMPORTANT ~~"
   echo " This script will never change or rename the original files in any way"
-  echo " Any changes are only performed on the copy"
+  echo " Changes are only performed on the copy"
  }
 
 function debug() {
@@ -82,43 +88,39 @@ function categorize() {
   isValid "$1"
   if [ $? -eq 0 ]; then
     debug "got an invalid file extension: ${NAME##*.}"
-    echo "Warning: file type not supported. file <$NAME> will be ignored"
+    warning "Warning: file type not supported. file <$NAME> will be ignored"
     return
   fi
 
-  debug "$NAME is a valid audio file"
-  ARTIST=$(exiftool -if "\$artist" -p "\${artist;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\];:|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
+  ARTIST=$(exiftool -if "\$artist" -p "\${artist;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\];:?|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
   if [ $? -gt 0 ]; then
-    warning "Error: Artist not found for $NAME"
+    warning "Error: Artist not found for $NAME."
     ARTIST=$DEFAULT_ARTIST
   fi
 
-  ALBUM=$(exiftool -if "\$album" -p "\${album;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\];:|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
+  ALBUM=$(exiftool -if "\$album" -p "\${album;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\];:?|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
   if [ $? -gt 0 ]; then
     warning "Error: Album not found for $NAME"
     ALBUM=$DEFAULT_ALBUM
   fi
 
-  if [ ! -d "$DEST/$ARTIST/$ALBUM" ]; then
-    mkdir -p "$DEST/$ARTIST/$ALBUM"
-  fi
   #                                              :1=>01:             :01/10=>01:         :title =>title: :title name=>title_name: :
   FILENAME=$(exiftool -if "\$track" -p "\${track;s/\b(\d{1})\b/0\$1/;s/\/\d+//}_\${title;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\]:;|,]//g}.\${filetypeextension}" "$1" 2>/dev/null)
   if [ $? -gt 0 ]; then
-    debug "keeping old filename for $NAME"
-    echo "Warning: no usable metadata found in file $NAME. keeping original filename"
+    warning "Warning: no usable metadata found in file $NAME. keeping original filename"
     FILENAME=$NAME
   fi
   debug "new filename: $FILENAME"
 
   # copy to destination with new filename
   TARGET=$DEST/"$ARTIST"/"$ALBUM"
-
   if [ $COPY -eq 1 ]; then
+    if [ ! -d "$TARGET" ]; then
+      mkdir -p "$TARGET"
+    fi
     debug "copying to $TARGET"
     cp "$1" "$TARGET/$FILENAME"
     echo "copied file ($FILENAME) to $TARGET"
-    echo
   else
     echo "$TARGET/$FILENAME"
   fi
@@ -130,24 +132,62 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-if [ -d "$1" ]; then
-  debug "got directory: $1"
-  IS_DIR=1
-else
-  echo "Invalid argument"
+while (( "$#" )); do
+  case "$1" in
+    -o | --output-dir)
+      DEST=$2
+      shift 2
+      ;;
+    -s | --source-dir)
+      SRC=$2
+      shift 2
+      ;;
+    -w | --what-if)
+      WHATIF=1
+      shift 1
+      ;;
+    -v | --verbose)
+      DEBUG=1
+      shift 1
+      ;;
+    -h | --help)
+      print_help
+      exit 0
+      ;;
+    *)
+      warning "Error: Unrecoginzed parameter $1"
+      print_help
+      exit 1
+      ;;
+  esac
+done
+
+if [ ! -d "$SRC" ];then
+  warning "Error: Source is not a directory"
   print_help
   exit 1
 fi
 
-if [ $# -gt 1 ] && [ -d "$2" ]; then
-  COPY=1
-  DEST=$2
-else
-  echo "no destination provided"
-  echo "[what-if mode]"
+if [ $WHATIF -eq 0 ]; then
+  if [ "$DEST" == "" ]; then
+    # what-if mode
+    echo "no output directory provided. running in what-if mode."
+    WHATIF=1
+  else
+    if [ ! -d $DEST ]; then
+      read -p "Destination directory does not exist. Create? [Y/n]" INPUT 
+      if [ "$(echo $INPUT | tr 'A-Z' 'a-z')" != "n" ]; then
+        mkdir -p $DEST
+      else
+        echo "Aborting..."
+        echo "To enable What-If mode, simply don't provide the '-o' option"
+        exit 0
+      fi
+    fi
+  fi
 fi
 
 # do it
-processDir "$1"
+processDir "$SRC"
 
 echo "done"
