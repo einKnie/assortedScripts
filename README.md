@@ -76,3 +76,34 @@ Album				: AnAmazingAlbum
 <b>Note:</b> If artist or album of a song cannot be determined from the file's metadata, the file is copied to <i>\<various>/\<other></i>.  
 In case the track number is not found, the file will keep its original name.
 
+---
+
+### [diffscript.sh](diffscript.sh)
+
+The script runs two different executables with the same arguments and checks if there is a differece in the programs' output.
+
+
+#### Usage
+
+```
+-x1 				| left-side executable
+-x2 				| right-side executable
+-c  				| commands for the two executables; should be in quotes	 
+-h  --help          |	 show help screen
+```
+
+
+#### Example
+
+```
+> ./diffscript.sh -x1 /usr/bin/diff -x2 /usr/bin/diff -c "--help"
+left:      /usr/bin/diff
+right:     /usr/bin/diff
+commands:  "--help"
+
+it's the same!
+> 
+```
+
+<b>Note:</b> The respective output of the tested executables can be found in the script's directory afterwards, as ``` ./res_left ``` and ``` ./res_right ```, respectively.
+In case the outputs differ, the diff result is also printed to stdout.
