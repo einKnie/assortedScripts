@@ -86,10 +86,11 @@ The script runs two different executables with the same arguments and checks if 
 #### Usage
 
 ```
--x1 				| left-side executable
--x2 				| right-side executable
--c  				| commands for the two executables; should be in quotes	 
--h  --help          |	 show help screen
+-x1			| left-side executable
+-x2			| right-side executable
+-c			| commands for the two executables; should be in quotes
+-q			| quiet, disable all output	 
+-h  --help	| show help screen
 ```
 
 
