@@ -17,18 +17,18 @@ The visualisation of the collected data with gnuplot is built in.
 -f, --file         |   output file (default /tmp/generic.log)  
                    |   If the file exists, you have the option to plot it
                    |   instead of collecting data.  
-                   
+
 -n, --name         |   set target by name   
 
--p, --pid          |   set target by pid 
-  
+-p, --pid          |   set target by pid
+
 -c, --comment      |   an optional title appendix for the generated plot
                    |   for exmple "while playing a video"
-                       
+
 -a                 |   automatic mode. overwrite file and plot data without prompt
--x                 |   what-if mode, just print the configuration 
+-x                 |   what-if mode, just print the configuration
                    |   that resulted from your other parameters
-                       
+
 -h, --help         |   show this help message
 ```  
 ---
@@ -61,16 +61,16 @@ All valid audio files in the <i><b>source directory</b></i> are categorized and 
 <b>The original files are not touched in any way! Files are copied to their respective destination and then renamed.</b>
 
 #### Example
-A song with the following metadata will be stored under 
+A song with the following metadata will be stored under
 <b>/TheBand/AnAmazingAlbum/04\_Best\_Song.mp3</b>
 
 ```
 [...]
-FileType			: mp3
-Track				: 4
-Artist				: TheBand
-Title				: Best Song
-Album				: AnAmazingAlbum
+FileType    : mp3
+Track       : 4
+Artist      : TheBand
+Title       : Best Song
+Album       : AnAmazingAlbum
 ```
 
 <b>Note:</b> If artist or album of a song cannot be determined from the file's metadata, the file is copied to <i>\<various>/\<other></i>.  
@@ -86,11 +86,11 @@ The script runs two different executables with the same arguments and checks if 
 #### Usage
 
 ```
--x1			| left-side executable
--x2			| right-side executable
--c			| commands for the two executables; should be in quotes
--q			| quiet, disable all output	 
--h  --help	| show help screen
+-x1         | left-side executable
+-x2         | right-side executable
+-c          | commands for the two executables; should be in quotes
+-q          | quiet, disable all output	 
+-h  --help  | show help screen
 ```
 
 
@@ -103,7 +103,7 @@ right:     /usr/bin/diff
 commands:  "--help"
 
 it's the same!
-> 
+>
 ```
 
 <b>Note:</b> The respective output of the tested executables can be found in the script's directory afterwards, as ``` ./res_left ``` and ``` ./res_right ```, respectively.
