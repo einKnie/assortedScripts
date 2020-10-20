@@ -108,3 +108,35 @@ it's the same!
 
 <b>Note:</b> The respective output of the tested executables can be found in the script's directory afterwards, as ``` ./res_left ``` and ``` ./res_right ```, respectively.
 In case the outputs differ, the diff result is also printed to stdout.
+
+---
+### [reminder.sh](reminder.sh)
+
+[possible WIP]
+
+#### Usage
+
+```
+--on        | set a timer
+--off       | unset a reminder [only for reboot reminder]
+--message   | the reminder
+-t          | time for timer, in format "5m 3h 1d"
+            |  -> 5 minutes, 3 hours, and 1 day
+            |  (only non-zero values need to be specified)	 
+-h  --help  | show help screen
+```
+
+
+#### Example
+
+```
+> ./reminder.sh --on --message "Good morning!"
+```
+will set a reminder for your next reboot with the message "Good morning!"
+
+
+
+```
+> ./reminder.sh --on -t "5m" --message "mind the stove!"
+```
+will remind you to mind the stove in five minutes.
