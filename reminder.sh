@@ -19,10 +19,6 @@ remind_cmd="zenity --info --text="
 origfile="./original"
 testfile="./tmp"
 
-minutes=""
-hours=""
-days=""
-
 message=""
 op=-1
 timer=0
