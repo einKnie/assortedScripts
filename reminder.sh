@@ -6,10 +6,10 @@
 # or let the script clean itself up after showing the message
 
 # [DONE] todo: this script should add its own path to command -> quasi @reboot $cmd ; $0 0
-#        todo: add parameter for specific timeout, e.g. 20 minutes!!
+# [DONE] todo: add parameter for specific timeout, e.g. 20 minutes!!
 #               --> you could use it as an oven timer or something!
 #               --> btw: it's really stupid to use cron for this
-#        todo: add option for intercactive input, i.e. scripts opens an input window a la timekeeper
+# [DONE] todo: add option for intercactive input, i.e. scripts opens an input window a la timekeeper
 # [DONE] todo: alwys use exact zenity command -> b/c otherwise it woudn't be possible to set multiple timers
 #               -> is easy b/c I'll just use $cmd instead of $remind_cmd in self-call
 
