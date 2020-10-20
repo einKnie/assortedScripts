@@ -22,6 +22,7 @@ testfile="./tmp"
 message=""
 op=-1
 timer=0
+time_str=""
 timer_time=""
 
 # set a reboot cron job
@@ -51,6 +52,14 @@ unset_cron() {
 
 # set a timer
 set_timer() {
+  if [ "$time_str" == "" ] ;then
+    time_str="$(zenity --entry --text="when?")"
+    [ "$time_str" == "" ] && return 0
+  fi
+
+  if ! parse_time "$time_str" ;then
+    return 1
+  fi
 
   cmd="DISPLAY=:0 $remind_cmd\"$1\""
 
@@ -63,9 +72,9 @@ EOF
 # parse time from caller (format: [xm yh zd])
 parse_time() {
 
-  m="$(echo "$1" | sed 's/^.*\([0-9]\+\)\s*[mM].*$/\1/g')"
-  h="$(echo "$1" | sed 's/^.*\([0-9]\+\)\s*[hH].*$/\1/g')"
-  d="$(echo "$1" | sed 's/^.*\([0-9]\+\)\s*[dD].*$/\1/g')"
+  m="$(echo "$1" | sed -r 's/([0-9]*)\s*[mM].*|./\1/g')"
+  h="$(echo "$1" | sed -r 's/([0-9]*)\s*[hH].*|./\1/g')"
+  d="$(echo "$1" |sed -r 's/([0-9]*)\s*[dD].*|./\1/g')"
 
   [ "$m" == "$1" ] && m=0
   [ "$h" == "$1" ] && h=0
@@ -87,16 +96,18 @@ print_help() {
   echo 
   echo "$0 --on | --off [ --message <message> -t <time> ]"
   echo
-  echo " --on       ... set a timer"
-  echo " --off      ... unset a timer [only if reboot timer]"
-  echo " --message  ... set the reminder message string"
-  echo " -t         ... set time for timer"
-  echo "                time must be quoted and in format \"5m 3h 1d\""
-  echo "                -> 5 minutes, 3 hours, one day (only non-zero values must be specified)"
+  echo " --on           ... set a timer"
+  echo " --off          ... unset a timer [only if reboot timer]"
+  echo " -m | --message ... set the reminder message string"
+  echo " -t | --time    ... set time for timer"
+  echo "                    time must be quoted and in format \"5m 3h 1d\""
+  echo "                    -> 5 minutes, 3 hours, one day"
+  echo "                    (only non-zero values must be specified)"
   echo 
   echo " note:"
   echo "  if no time is set, a reminder is set for next reboot."
   echo "  if no message is provided, the user in queried interactively."
+  echo "  same goes for -t time, if -t is specified without a time string"
 }
 
 ### SCRIPT START
@@ -117,14 +128,12 @@ while [ "$#" -ne 0 ]; do
       shift 2
       ;;
     -t | --time)
-      if ! parse_time "$2" ; then
-        echo "invalid time set"
-        print_help
-        exit 1
-      fi
-      
       timer=1
-      shift 2
+      if [ ! -z $2 ] && [[ ${2:0:1} != "-" ]] ; then
+        time_str="$2"
+        shift
+      fi 
+      shift
       ;;
     -h|--help)
       print_help
@@ -138,7 +147,7 @@ while [ "$#" -ne 0 ]; do
   esac
 done
 
-#execute arguments
+# execute arguments
 if [ "$op" -eq 1 ]; then
   if [ "$message" == "" ]; then
     # query message from user
