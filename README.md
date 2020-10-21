@@ -108,3 +108,40 @@ it's the same!
 
 <b>Note:</b> The respective output of the tested executables can be found in the script's directory afterwards, as ``` ./res_left ``` and ``` ./res_right ```, respectively.
 In case the outputs differ, the diff result is also printed to stdout.
+
+---
+### [reminder.sh](reminder.sh)
+
+[possible WIP]
+
+Set yourself a reminder, either for your next reboot, or after a set time.
+
+#### Usage
+
+```
+--on        | set a timer
+--off       | unset a reminder [only for reboot reminder]
+--message   | the reminder
+-t          | time for timer, in format "5m 3h 1d" *
+            |  -> 5 minutes, 3 hours, and 1 day
+            |  (only non-zero values need to be specified)	 
+-h  --help  | show help screen
+```
+
+\* time may also be specified without whitespaces, in which case the string need not be quoted. __5m3h__ is a valid time string.  
+
+If __message__ is not set, the user will be queried via an entry window. The same holds true for __time__: if the _-t_ parameter is given without a time string, the user is queried for one. 
+
+#### Example
+
+```
+> ./reminder.sh --on --message "Good morning!"
+```
+will set a reminder for your next reboot with the message "Good morning!"
+
+
+
+```
+> ./reminder.sh --on -t 5m --message "mind the stove!"
+```
+will remind you to mind the stove in five minutes.
