@@ -112,20 +112,22 @@ In case the outputs differ, the diff result is also printed to stdout.
 ---
 ### [reminder.sh](reminder.sh)
 
-[possible WIP]
+[~~possible~~ __definitive WIP:__ Reboot reminder does not work yet _(timer does)_]
 
-Set yourself a reminder, either for your next reboot, or after a set time.
+Set yourself a reminder, either for your next reboot, or after a set time.  
+
+
 
 #### Usage
 
 ```
---on        | set a timer
---off       | unset a reminder [only for reboot reminder]
---message   | the reminder
--t          | time for timer, in format "5m 3h 1d" *
-            |  -> 5 minutes, 3 hours, and 1 day
-            |  (only non-zero values need to be specified)	 
--h  --help  | show help screen
+--on          | set a timer
+--off         | unset a reminder [only for reboot reminder]
+-m --message  | the reminder
+-t --time     | time for timer, in format "5m 3h 1d" *
+              |  -> 5 minutes, 3 hours, and 1 day
+              |  (only non-zero values need to be specified)	 
+-h --help     | show help screen
 ```
 
 \* time may also be specified without whitespaces, in which case the string need not be quoted. __5m3h__ is a valid time string.  
