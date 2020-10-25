@@ -30,7 +30,7 @@ set_cron() {
 
   own_cmd="$ownpath 0 \"$1\""
   cmd="@reboot DISPLAY=:0 $remind_cmd\"$1\" && $own_cmd"
-  
+
   crontab -l > "$origfile"
   crontab -l > "$testfile"
   echo "$cmd" >> "$testfile"
@@ -52,12 +52,17 @@ unset_cron() {
 
 # set a timer
 set_timer() {
+  interactive=0
   if [ "$time_str" == "" ] ;then
-    time_str="$(zenity --entry --text="when?")"
-    [ "$time_str" == "" ] && return 0
+    interactive=1
+    time_str="$(get_input "When?")"
+    [ $? -eq 1 ] && return 1
   fi
 
   if ! parse_time "$time_str" ;then
+    if [ $interactive -eq 1 ] ;then
+      show_note "Invalid time. Aborting"
+    fi
     return 1
   fi
 
@@ -66,25 +71,45 @@ set_timer() {
   at -t "$timer_time" <<EOF
   $cmd
 EOF
+}
 
+get_input() {
+  str="$(zenity --entry --text="$1")"
+  if [ "$str" == "" ] ;then
+    show_note "Aborted"
+    return 1
+  fi
+  echo "$str"
+  return 0
+}
+
+show_note() {
+  $(zenity --info --no-wrap --text="$1")
 }
 
 # parse time from caller (format: [xm yh zd])
 parse_time() {
 
+  if [ "$(echo "$1" | sed -r 's/[0-9mMhHdD[:space:]]*//g')" != "" ] ;then
+    echo "invalid time string"
+    return 1
+  fi
+
   m="$(echo "$1" | sed -r 's/([0-9]*)\s*[mM].*|./\1/g')"
   h="$(echo "$1" | sed -r 's/([0-9]*)\s*[hH].*|./\1/g')"
-  d="$(echo "$1" |sed -r 's/([0-9]*)\s*[dD].*|./\1/g')"
+  d="$(echo "$1" | sed -r 's/([0-9]*)\s*[dD].*|./\1/g')"
 
-  [ "$m" == "$1" ] && m=0
-  [ "$h" == "$1" ] && h=0
-  [ "$d" == "$1" ] && d=0
+  [ "$m" == "" ] && m=0
+  [ "$h" == "" ] && h=0
+  [ "$d" == "" ] && d=0
 
-  if [ "$(($m + $h + $d))" -eq 0 ]; then
+  echo "$m min, $h hours, $d days"
+
+  if [ "$(($m + $h + $d))" -eq 0 ] ;then
     echo "invalid time set"
     return 1
   fi
-  
+
   timer_time="$(date -d "$(date +'%D %T') $m minutes $h hours $d days" +'%Y%m%d%H%M.%S')"
   return 0
 
@@ -93,7 +118,7 @@ parse_time() {
 print_help() {
   echo
   echo "reminder v0.3"
-  echo 
+  echo
   echo "$0 --on | --off [ --message <message> -t <time> ]"
   echo
   echo " --on           ... set a timer"
@@ -103,17 +128,19 @@ print_help() {
   echo "                    time must be quoted and in format \"5m 3h 1d\""
   echo "                    -> 5 minutes, 3 hours, one day"
   echo "                    (only non-zero values must be specified)"
-  echo 
+  echo
   echo " note:"
   echo "  if no time is set, a reminder is set for next reboot."
   echo "  if no message is provided, the user in queried interactively."
   echo "  same goes for -t time, if -t is specified without a time string"
+  echo
+  echo " also: the reboot reminder does not work atm. But the timer functionality does."
 }
 
 ### SCRIPT START
 
 # parse arguments
-while [ "$#" -ne 0 ]; do
+while [ "$#" -ne 0 ] ;do
   case "$1" in
     --on)
       op=1
@@ -124,19 +151,27 @@ while [ "$#" -ne 0 ]; do
       shift
       ;;
     -m | --message)
-      message="$2"
-      shift 2
+      if [ ! -z $2 ] && [[ ${2:0:1} != "-" ]] ;then
+        message="$2"
+        shift
+      fi
+      shift
       ;;
     -t | --time)
       timer=1
-      if [ ! -z $2 ] && [[ ${2:0:1} != "-" ]] ; then
+      if [ ! -z "$2" ] && [[ ${2:0:1} != "-" ]] ;then
         time_str="$2"
         shift
-      fi 
+      fi
       shift
       ;;
-    -h|--help)
+    -h |--help)
       print_help
+      exit 0
+      ;;
+    --debug)
+      set -x
+      parse_time "$2"
       exit 0
       ;;
     *)
@@ -148,20 +183,20 @@ while [ "$#" -ne 0 ]; do
 done
 
 # execute arguments
-if [ "$op" -eq 1 ]; then
-  if [ "$message" == "" ]; then
+if [ "$op" -eq 1 ] ;then
+  if [ "$message" == "" ] ;then
     # query message from user
-    message=$(zenity --entry --text="Remind you of what, exactly?")
-    [ "$message" == "" ] && exit 0
+    message="$(get_input "Remind you of what, exactly?")"
+    [ $? -eq 1 ] && exit 0
   fi
 
-  if [ "$timer" -eq 1 ] ; then
+  if [ "$timer" -eq 1 ] ;then
     set_timer "$message"
   else
     own_cmd="$ownpath 0 \"$message\""
     set_cron "$message"
   fi
-elif [ "$op" -eq 0 ]; then
+elif [ "$op" -eq 0 ] ;then
     own_cmd="$ownpath 0 \"$message\""
     unset_cron "$message"
 else
@@ -170,4 +205,4 @@ else
   exit 1
 fi
 
-exit 0
+exit $?
