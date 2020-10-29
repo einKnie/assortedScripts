@@ -28,8 +28,9 @@ timer_time=""
 # set a reboot cron job
 set_cron() {
 
-  own_cmd="$ownpath 0 \"$1\""
-  cmd="@reboot DISPLAY=:0 $remind_cmd\"$1\" && $own_cmd"
+  own_cmd="$ownpath --off -m \"$1\""
+  timeout="10"
+  cmd="@reboot sleep $timeout && DISPLAY=:0 $remind_cmd\"$1\" && $own_cmd"
 
   crontab -l > "$origfile"
   crontab -l > "$testfile"
@@ -41,6 +42,8 @@ set_cron() {
 
 # unset a reboot cron job
 unset_cron() {
+
+  echo "unsetting command"
 
   cmd="$remind_cmd\"$1\""
 
@@ -151,7 +154,7 @@ while [ "$#" -ne 0 ] ;do
       shift
       ;;
     -m | --message)
-      if [ ! -z $2 ] && [[ ${2:0:1} != "-" ]] ;then
+      if [ ! -z "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
         message="$2"
         shift
       fi
@@ -159,7 +162,7 @@ while [ "$#" -ne 0 ] ;do
       ;;
     -t | --time)
       timer=1
-      if [ ! -z "$2" ] && [[ ${2:0:1} != "-" ]] ;then
+      if [ ! -z "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
         time_str="$2"
         shift
       fi
