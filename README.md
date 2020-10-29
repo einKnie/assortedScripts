@@ -112,8 +112,6 @@ In case the outputs differ, the diff result is also printed to stdout.
 ---
 ### [reminder.sh](reminder.sh)
 
-[~~possible~~ __definitive WIP:__ Reboot reminder does not work yet _(timer does)_]
-
 Set yourself a reminder, either for your next reboot, or after a set time.  
 
 
