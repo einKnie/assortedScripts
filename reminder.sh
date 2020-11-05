@@ -14,7 +14,7 @@
 #               -> is easy b/c I'll just use $cmd instead of $remind_cmd in self-call
 
 ownpath="$(cd "$(dirname "$0")"; pwd -P)/"$(basename "$0")""
-remind_cmd="zenity --info --text="
+remind_cmd="zenity --info --no-wrap --text="
 
 origfile="./original"
 testfile="./tmp"
@@ -24,6 +24,9 @@ op=-1
 timer=0
 time_str=""
 timer_time=""
+
+link=0
+linktext="You wanted me to remind you of this"
 
 # set a reboot cron job
 set_cron() {
@@ -124,20 +127,20 @@ print_help() {
   echo
   echo "$0 --on | --off [ --message <message> -t <time> ]"
   echo
-  echo " --on           ... set a timer"
-  echo " --off          ... unset a timer [only if reboot timer]"
-  echo " -m | --message ... set the reminder message string"
-  echo " -t | --time    ... set time for timer"
-  echo "                    time must be quoted and in format \"5m 3h 1d\""
-  echo "                    -> 5 minutes, 3 hours, one day"
-  echo "                    (only non-zero values must be specified)"
+  echo " --on                 ... set a timer"
+  echo " --off                ... unset a timer [only if reboot timer]"
+  echo " -m | --message <str> ... set the reminder message string"
+  echo " -t | --time    <str> ... set time for timer"
+  echo "                          time must be quoted and in format \"5m 3h 1d\""
+  echo "                          -> 5 minutes, 3 hours, one day"
+  echo "                          (only non-zero values must be specified)"
+  echo " -l | --link          ... transform the message to a clickable link in the reminder"
+  echo " -h | --help              show this help screen"
   echo
   echo " note:"
   echo "  if no time is set, a reminder is set for next reboot."
   echo "  if no message is provided, the user in queried interactively."
   echo "  same goes for -t time, if -t is specified without a time string"
-  echo
-  echo " also: the reboot reminder does not work atm. But the timer functionality does."
 }
 
 ### SCRIPT START
@@ -158,6 +161,10 @@ while [ "$#" -ne 0 ] ;do
         message="$2"
         shift
       fi
+      shift
+      ;;
+    -l | --link)
+      link=1
       shift
       ;;
     -t | --time)
@@ -187,12 +194,16 @@ done
 
 # execute arguments
 if [ "$op" -eq 1 ] ;then
-  if [ "$message" == "" ] ;then
+  if [ -z "$message" ] ;then
     # query message from user
     message="$(get_input "Remind you of what, exactly?")"
     [ $? -eq 1 ] && exit 0
   fi
 
+  if [ $link -eq 1 ] ;then
+    message="<a href='$message'>$linktext</a>"
+  fi
+  
   if [ "$timer" -eq 1 ] ;then
     set_timer "$message"
   else
