@@ -5,41 +5,6 @@ I will probably add to it over time.
 
 ## Content
 
-### [cpulog.sh](cpulog.sh)
-
-The script collects CPU usage of a single process continuously, until stopped with `ctrl-c`.  
-The visualisation of the collected data with gnuplot is built in.
-
-##### Usage
-
-
-```
--f, --file         |   output file (default /tmp/generic.log)  
-                   |   If the file exists, you have the option to plot it
-                   |   instead of collecting data.  
-
--n, --name         |   set target by name   
-
--p, --pid          |   set target by pid
-
--c, --comment      |   an optional title appendix for the generated plot
-                   |   for exmple "while playing a video"
-
--a                 |   automatic mode. overwrite file and plot data without prompt
--x                 |   what-if mode, just print the configuration
-                   |   that resulted from your other parameters
-
--h, --help         |   show this help message
-```  
----
-
-### [setdns.sh](setdns.sh)
-
-The script provides an interface to add or remove DNS entries from the current active network connection, using nmcli.  
-No parameters, the script is interactive.
-
----
-
 ### [categorizeMusic.sh](categorizeMusic.sh)
 
 The script categorizes audio files into a folder structure <i>/\<artist>/\<album>/\<track_title.fileextension></i> from metadata.
@@ -78,9 +43,37 @@ In case the track number is not found, the file will keep its original name.
 
 ---
 
+### [cpulog.sh](cpulog.sh)
+
+The script collects CPU usage of a single process continuously, until stopped with `ctrl-c`.  
+The visualisation of the collected data with gnuplot is built in.
+
+##### Usage
+
+
+```
+-f, --file         |   output file (default /tmp/generic.log)  
+                   |   If the file exists, you have the option to plot it
+                   |   instead of collecting data.  
+
+-n, --name         |   set target by name   
+
+-p, --pid          |   set target by pid
+
+-c, --comment      |   an optional title appendix for the generated plot
+                   |   for exmple "while playing a video"
+
+-a                 |   automatic mode. overwrite file and plot data without prompt
+-x                 |   what-if mode, just print the configuration
+                   |   that resulted from your other parameters
+
+-h, --help         |   show this help message
+```  
+---
+
 ### [diffscript.sh](diffscript.sh)
 
-The script runs two different executables with the same arguments and checks if there is a differece in the programs' output.
+The script runs two different executables with the same arguments and checks if there is a differece in the programs' output. Useful for refactoring.
 
 
 #### Usage
@@ -146,3 +139,15 @@ will set a reminder for your next reboot with the message "Good morning!"
 > ./reminder.sh --on -t 5m --message "mind the stove!"
 ```
 will remind you to mind the stove in five minutes.
+
+---
+
+### [setdns.sh](setdns.sh)
+
+The script provides an interface to add or remove DNS entries from the current active network connection, using nmcli.  
+No parameters, the script is interactive.
+
+---
+
+
+
