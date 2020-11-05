@@ -125,6 +125,7 @@ Set yourself a reminder, either for your next reboot, or after a set time.
 -t --time     | time for timer, in format "5m 3h 1d" *
               |  -> 5 minutes, 3 hours, and 1 day
               |  (only non-zero values need to be specified)	 
+-l --link     | treat the message as a link, making it clickable in the reminder window
 -h --help     | show help screen
 ```
 
