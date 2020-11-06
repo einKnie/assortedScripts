@@ -13,11 +13,12 @@
 # [DONE] todo: alwys use exact zenity command -> b/c otherwise it woudn't be possible to set multiple timers
 #               -> is easy b/c I'll just use $cmd instead of $remind_cmd in self-call
 
-ownpath="$(cd "$(dirname "$0")"; pwd -P)/"$(basename "$0")""
+dir="$(cd "$(dirname "$0")"; pwd -P)"
+ownpath="$dir/"$(basename "$0")""
 remind_cmd="zenity --info --no-wrap --text="
 
-origfile="./original"
-testfile="./tmp"
+origfile="$dir/original"
+testfile="$dir/tmp"
 
 message=""
 op=-1
@@ -40,15 +41,12 @@ set_cron() {
   echo "$cmd" >> "$testfile"
   cat "$testfile" | crontab -
   rm "$testfile"
-
 }
 
 # unset a reboot cron job
 unset_cron() {
 
-  echo "unsetting command"
-
-  cmd="$remind_cmd\"$1\""
+  cmd="${remind_cmd}\"$1\""
 
   crontab -l > "$origfile"
   crontab -l > "$testfile"
@@ -181,8 +179,7 @@ while [ "$#" -ne 0 ] ;do
       ;;
     --debug)
       set -x
-      parse_time "$2"
-      exit 0
+      shift
       ;;
     *)
       echo "invalid command"
@@ -192,26 +189,26 @@ while [ "$#" -ne 0 ] ;do
   esac
 done
 
+if [ $link -eq 1 ] && [ ! -z "$message" ];then
+  message="<a href='$message'>$linktext</a>"
+fi
+
 # execute arguments
 if [ "$op" -eq 1 ] ;then
+
   if [ -z "$message" ] ;then
     # query message from user
     message="$(get_input "Remind you of what, exactly?")"
     [ $? -eq 1 ] && exit 0
   fi
 
-  if [ $link -eq 1 ] ;then
-    message="<a href='$message'>$linktext</a>"
-  fi
-  
   if [ "$timer" -eq 1 ] ;then
     set_timer "$message"
   else
-    own_cmd="$ownpath 0 \"$message\""
     set_cron "$message"
   fi
+
 elif [ "$op" -eq 0 ] ;then
-    own_cmd="$ownpath 0 \"$message\""
     unset_cron "$message"
 else
   echo "no (valid) operation set!"
