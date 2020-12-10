@@ -91,6 +91,10 @@ show_note() {
   $(zenity --info --no-wrap --text="$1")
 }
 
+show_info() {
+  $(notify-send "reminder" "$1" )
+}
+
 # parse time from caller (format: [xm yh zd])
 parse_time() {
 
@@ -203,7 +207,7 @@ if [ "$op" -eq 1 ] ;then
   fi
 
   if [ "$timer" -eq 1 ] ;then
-    set_timer "$message"
+    set_timer "$message" && show_info "timer set for $(echo $timer_time | sed -r 's/^([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}).*$/\3.\2.\1, \4:\5/g')"
   else
     set_cron "$message"
   fi
