@@ -91,7 +91,7 @@ More specifically, the line
 #### Example
 
 ```
-> ./debugifier.sh -s ~/scripts/some_script.sh -o1
+> ./debugifier.sh -s ~/scripts/some_script.sh -o 1
 
 ```
 
