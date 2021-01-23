@@ -10,7 +10,7 @@ print_help() {
 	echo "debugifier v0.1"
 	echo
 	echo "usage:"
-	echo " ./debugifier.sh <filename>"
+	echo " ./debugifier.sh <filename> <1|0>"
 }
 
 [ -z "$1" ] && { print_help ; exit 1 ; }
@@ -19,16 +19,11 @@ print_help() {
 inputfile="$1"
 op="$2"
 
-rep="\n\techo \"in \$(basename \$BASH_SOURCE) \${FUNCNAME[0]}\""
+rep="\techo \"in \$(basename \$BASH_SOURCE) \${FUNCNAME[0]}\"\n"
 rer="$(echo "$rep" | sed -r 's/\$|\{|\}|\(|\)|\[|\]/\\&/g')"
 
-echo "$rep"
-echo
-echo "$rer"
-echo
-
 if [ "$op" -eq 1 ] ;then
-	sed -i.bak -r "s/^(function\s*)?[a-zA-Z0-9_]+\s*(\(\))?\s*\{\s*$/&${rep}/gm" "$inputfile"
+	sed -i.bak -r -z "s/\n\s*(function\s*)?[a-zA-Z0-9_]+\s*(\(\))?\s*(\n)?\s*\{.*\n/&${rep}/gm" "$inputfile"
 else
 	sed -i.bak -r -z "s/${rer}//g" "$inputfile"
 fi
