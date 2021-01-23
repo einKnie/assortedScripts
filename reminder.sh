@@ -92,7 +92,7 @@ show_note() {
 }
 
 show_info() {
-  $(notify-send "reminder" "$1" )
+  $(notify-send "reminder" "$1")
 }
 
 # parse time from caller (format: [xm yh zd])
@@ -140,7 +140,7 @@ print_help() {
   echo " -h | --help              show this help screen"
   echo
   echo " note:"
-  echo "  if no time is set, a reminder is set for next reboot."
+  echo "  if -t is omitted, a reminder is set for next reboot."
   echo "  if no message is provided, the user in queried interactively."
   echo "  same goes for -t time, if -t is specified without a time string"
 }
@@ -159,7 +159,7 @@ while [ "$#" -ne 0 ] ;do
       shift
       ;;
     -m | --message)
-      if [ ! -z "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
+      if [ -n "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
         message="$2"
         shift
       fi
@@ -171,7 +171,7 @@ while [ "$#" -ne 0 ] ;do
       ;;
     -t | --time)
       timer=1
-      if [ ! -z "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
+      if [ -n "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
         time_str="$2"
         shift
       fi
@@ -193,7 +193,7 @@ while [ "$#" -ne 0 ] ;do
   esac
 done
 
-if [ $link -eq 1 ] && [ ! -z "$message" ];then
+if [ $link -eq 1 ] && [ -n "$message" ];then
   message="<a href='$message'>$linktext</a>"
 fi
 
