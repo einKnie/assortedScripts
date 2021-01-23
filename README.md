@@ -71,6 +71,76 @@ The visualisation of the collected data with gnuplot is built in.
 ```  
 ---
 
+### [debugifier.sh](debugifier.sh)
+
+The script adds simple debug output to a given bash script, and removes it again when no longer needed.
+
+More specifically, the line 
+`echo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"` is added at the start of every defined function. This line outputs `in <filename> <functionname>`, allowing for a quick overview of the script flow, even across multiple files.
+
+
+#### Usage
+
+```
+-s <path>        | shell script
+-o <1|0>         | operation
+
+```
+
+
+#### Example
+
+```
+> ./debugifier.sh -s ~/scripts/some_script.sh -o1
+
+```
+
+<table>
+<tr>
+<th>
+Original
+</th>
+<th>
+Debugified
+</th>
+</tr>
+<tr>
+<td>
+
+<pre>
+function debug() {
+  	if [ $DEBUG -eq 1 ]; then
+    		echo $1
+  	fi
+}
+
+function warning() {
+  	echo -e "\033[0;31m$1\033[0m"
+} 
+</pre>
+
+</td>
+<td>
+
+<pre>
+function debug() {
+	echo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"
+  	if [ $DEBUG -eq 1 ]; then
+    		echo $1
+  	fi
+}
+
+function warning() {
+	echo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"
+  	echo -e "\033[0;31m$1\033[0m"
+} 
+</pre>
+
+</td>
+</tr>
+</table>
+
+---
 ### [diffscript.sh](diffscript.sh)
 
 The script runs two different executables with the same arguments and checks if there is a differece in the programs' output. Useful for refactoring.
