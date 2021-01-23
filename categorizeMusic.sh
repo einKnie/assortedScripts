@@ -21,7 +21,7 @@
 # - track number: file is stored under 'artist/album/<original filename>'
 
 DEBUG=0
-COPY=0
+COPY=1
 WHATIF=0
 
 DEFAULT_ARTIST="various"
@@ -92,20 +92,23 @@ function categorize() {
     return
   fi
 
-  ARTIST=$(exiftool -if "\$artist" -p "\${artist;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\];:?|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
+  #                                             :trim     :space=>_ :remove special chars       :make lower case
+  ARTIST=$(exiftool -if "\$artist" -p "\${artist;s/(^\s+)|(\s+$)//;s/\s+/_/g;s/[\"\*\.\\/\[\];:?\|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
   if [ $? -gt 0 ]; then
     warning "Error: Artist not found for $NAME."
     ARTIST=$DEFAULT_ARTIST
   fi
 
-  ALBUM=$(exiftool -if "\$album" -p "\${album;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\];:?|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
+  ALBUM=$(exiftool -if "\$album" -p "\${album;s/(^\s+)|(\s+$)//g;s/\s+/_/g;s/[\"\*\.\\/\[\];:?\|,]//g;tr/[A-Z]/[a-z]/}" "$1" 2> /dev/null)
   if [ $? -gt 0 ]; then
     warning "Error: Album not found for $NAME"
     ALBUM=$DEFAULT_ALBUM
   fi
 
-  #                                              :1=>01:             :01/10=>01:         :title =>title: :title name=>title_name: :
-  FILENAME=$(exiftool -if "\$track" -p "\${track;s/\b(\d{1})\b/0\$1/;s/\/\d+//}_\${title;s/\s+$//;s/\s+/_/g;s/[\"\*\.\\/\[\]:;|,]//g}.\${filetypeextension}" "$1" 2>/dev/null)
+  #                                              :remove non-digits :1=>01 :01/10=>01
+	FILENAME=$(exiftool -if "\$track" -p "\${track;s/[^\d]+//g;s/\b(\d{1})\b/0\$1/;s/\/\d+//}_" "$1" 2>/dev/null || echo "")
+	#                                              : title =>title:    :title name=>title_name: :remove special chars :make lower case
+  FILENAME+=$(exiftool -if "\$title" -p "\${title;s/(^\s+)|(\s+$)//g;s/\s+/_/g;s/[\"\*\.\\/\[\];:?\|,]//g;tr/[A-Z]/[a-z]/}.\${filetypeextension}" "$1" 2>/dev/null)
   if [ $? -gt 0 ]; then
     warning "Warning: no usable metadata found in file $NAME. keeping original filename"
     FILENAME=$NAME
@@ -135,11 +138,11 @@ fi
 while (( "$#" )); do
   case "$1" in
     -o | --output-dir)
-      DEST=$2
+      DEST="$2"
       shift 2
       ;;
     -s | --source-dir)
-      SRC=$2
+      SRC="$2"
       shift 2
       ;;
     -w | --what-if)
@@ -175,7 +178,7 @@ if [ $WHATIF -eq 0 ]; then
     WHATIF=1
   else
     if [ ! -d $DEST ]; then
-      read -p "Destination directory does not exist. Create? [Y/n]" INPUT 
+      read -p "Destination directory does not exist. Create? [Y/n]" INPUT
       if [ "$(echo $INPUT | tr 'A-Z' 'a-z')" != "n" ]; then
         mkdir -p $DEST
       else
