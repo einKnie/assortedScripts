@@ -10,14 +10,39 @@ print_help() {
 	echo "debugifier v0.1"
 	echo
 	echo "usage:"
-	echo " ./debugifier.sh <filename> <1|0>"
+	echo " ./debugifier.sh -s <filename> -o <1|0>"
+	echo "   -s <path/to/script>"
+	echo "   -o <1/0>            ... 1 debugify, 0 undebugify"
 }
 
-[ -z "$1" ] && { print_help ; exit 1 ; }
-[ -z "$2" ] && { print_help ; exit 1 ; }
+while [ "$#" -ne 0 ] ;do
+	case "$1" in
+		-s)
+		if [ -n "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
+			inputfile="$2"
+			shift
+		fi
+		shift
+		;;
+		-o)
+		if [ -n "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
+			op="$2"
+			shift
+		fi
+		shift
+		;;
+		-h |--help)
+		print_help
+		exit 0
+		;;
+		*)
+		print_help
+		exit 1
+		;;
+	esac
+done
 
-inputfile="$1"
-op="$2"
+[[ -z "$inputfile" || -z "$op" ]] && { print_help ; exit ; }
 
 rep="\techo \"in \$(basename \$BASH_SOURCE) \${FUNCNAME[0]}\"\n"
 rer="$(echo "$rep" | sed -r 's/\$|\{|\}|\(|\)|\[|\]/\\&/g')"
