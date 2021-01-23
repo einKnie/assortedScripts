@@ -2,6 +2,8 @@
 
 # todo:
 # *need to account for functions w/o ()
+# * maybe add option to remove all other echos
+#		(but this might be tricky, b/c at reversal, how do we know whether an echo was already commented out beforehand)
 
 
 print_help() {
@@ -17,8 +19,16 @@ print_help() {
 inputfile="$1"
 op="$2"
 
+rep="\n\techo \"in \$(basename \$BASH_SOURCE) \${FUNCNAME[0]}\""
+rer="$(echo "$rep" | sed -r 's/\$|\{|\}|\(|\)|\[|\]/\\&/g')"
+
+echo "$rep"
+echo
+echo "$rer"
+echo
+
 if [ "$op" -eq 1 ] ;then
-	sed -i.bak -r 's/(^.*[^\s]*\s*\(\)\s*\{.*$)/\1\n\techo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"/gm' "$inputfile"
+	sed -i.bak -r "s/^(function\s*)?[a-zA-Z0-9_]+\s*(\(\))?\s*\{\s*$/&${rep}/gm" "$inputfile"
 else
-	sed -i.bak -r -z 's/\n\t*echo "in \$\(basename \$BASH_SOURCE\) \$\{FUNCNAME\[0\]\}"//g' "$inputfile"
+	sed -i.bak -r -z "s/${rer}//g" "$inputfile"
 fi
