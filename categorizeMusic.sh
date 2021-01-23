@@ -21,7 +21,6 @@
 # - track number: file is stored under 'artist/album/<original filename>'
 
 DEBUG=0
-COPY=1
 WHATIF=0
 
 DEFAULT_ARTIST="various"
@@ -117,7 +116,7 @@ function categorize() {
 
   # copy to destination with new filename
   TARGET=$DEST/"$ARTIST"/"$ALBUM"
-  if [ $COPY -eq 1 ]; then
+  if [ $WHATIF -eq 0 ]; then
     if [ ! -d "$TARGET" ]; then
       mkdir -p "$TARGET"
     fi
