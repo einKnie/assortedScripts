@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # todo:
-# *need to account for functions w/o ()
 # * maybe add option to remove all other echos
 #		(but this might be tricky, b/c at reversal, how do we know whether an echo was already commented out beforehand)
 
