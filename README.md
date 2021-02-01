@@ -75,7 +75,7 @@ The visualisation of the collected data with gnuplot is built in.
 
 The script adds simple debug output to a given bash script, and removes it again when no longer needed.
 
-More specifically, the line 
+More specifically, the line
 `echo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"` is added at the start of every defined function. This line outputs `in <filename> <functionname>`, allowing for a quick overview of the script flow, even across multiple files.
 
 
@@ -108,37 +108,39 @@ Debugified
 <td>
 
 <pre>
-function debug() {
+debug() {
   	if [ $DEBUG -eq 1 ]; then
     		echo $1
   	fi
 }
 
-function warning() {
+warning() {
   	echo -e "\033[0;31m$1\033[0m"
-} 
+}
 </pre>
 
 </td>
 <td>
 
 <pre>
-function debug() {
+debug() {
 	echo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"
   	if [ $DEBUG -eq 1 ]; then
     		echo $1
   	fi
 }
 
-function warning() {
+warning() {
 	echo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"
   	echo -e "\033[0;31m$1\033[0m"
-} 
+}
 </pre>
 
 </td>
 </tr>
 </table>
+
+The debugifier works with all sorts of function definition styles, such as `function foo() {}`, `foo() {}`, or even `foo {}`.
 
 ---
 ### [diffscript.sh](diffscript.sh)
@@ -194,7 +196,7 @@ Set yourself a reminder, either for your next reboot, or after a set time.
 
 \* time may also be specified without whitespaces, in which case the string need not be quoted. __5m3h__ is a valid time string.  
 
-If __message__ is not set, the user will be queried via an entry window. The same holds true for __time__: if the _-t_ parameter is given without a time string, the user is queried for one. 
+If __message__ is not set, the user will be queried via an entry window. The same holds true for __time__: if the _-t_ parameter is given without a time string, the user is queried for one.
 
 #### Example
 
@@ -218,6 +220,3 @@ The script provides an interface to add or remove DNS entries from the current a
 No parameters, the script is interactive.
 
 ---
-
-
-
