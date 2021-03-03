@@ -43,6 +43,53 @@ In case the track number is not found, the file will keep its original name.
 
 ---
 
+### [collect_gitdata.sh](collect_gitdata.sh)
+
+
+Starting at a given directory, this script recursively checks every subdirectory and lists information on every found git repository.
+
+##### Example
+
+````
+> ./collect_gitdata.sh ~/projects/
+path:   /home/einKnie/projects/gourmet
+remote: < no remote >
+hash:   b474b0b7a55f03adb67640547006b83d6db6f275
+tags/heads:
+b474b0b7a55f03adb67640547006b83d6db6f275 refs/heads/master
+
+path:   /home/einKnie/projects/javascript/urgent_mail
+remote: https://github.com/einKnie/urgentMail.git
+hash:   25bc3f59d25c4642bf82cbc94876134305d1467a
+tags/heads:
+25bc3f59d25c4642bf82cbc94876134305d1467a refs/heads/master
+25bc3f59d25c4642bf82cbc94876134305d1467a refs/tags/v1.3
+
+path:   /home/einKnie/projects/javascript/zensur
+remote: https://github.com/einKnie/zensur.git
+hash:   490ceab71bea95df82dba93e7477c976a4fba735
+tags/heads:
+490ceab71bea95df82dba93e7477c976a4fba735 refs/heads/master
+490ceab71bea95df82dba93e7477c976a4fba735 refs/tags/v1.4^{}
+
+path:   /home/einKnie/projects/libraries/log
+remote: https://github.com/einKnie/Logger.git
+hash:   8b3ba44e08093c8fcea8c519d1c655d3778758b3
+tags/heads:
+8b3ba44e08093c8fcea8c519d1c655d3778758b3 refs/heads/master
+
+path:   /home/einKnie/projects/vpn_detection
+remote: https://github.com/einKnie/vpn_status.git
+hash:   9d800caf5e612174a2782d83f146b6edb234c604
+tags/heads:
+9d800caf5e612174a2782d83f146b6edb234c604 refs/heads/monitoring_mode
+
+>
+
+````
+
+---
+
 ### [cpulog.sh](cpulog.sh)
 
 The script collects CPU usage of a single process continuously, until stopped with `ctrl-c`.  
