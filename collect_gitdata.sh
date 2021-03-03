@@ -3,11 +3,6 @@
 # take folder as argument, recurse through subfolders.
 # if  git dir is found, check remote url, branch/tag and hash
 # optionally return to stdout or write to file (?)
-# set -x
-
-fullpath() {
-  echo "$(cd "$1" &>/dev/null ; pwd -P)"
-}
 
 is_git_dir() {
   if [ -d "$1/.git" ] ;then
@@ -38,7 +33,6 @@ check_subdirs() {
       refs="$(git show-ref --heads --tags --dereference | grep $hash)"
 
       echo "path:   $(pwd)"
-      #echo "remote: "$( if "$repourl" -eq "" ; then { echo "< no remote >" ; } ; else { echo "$repourl" ; } ; fi)""
       echo "remote: $repourl"
       echo "hash:   $hash"
       echo "tags/heads:"
@@ -53,10 +47,12 @@ check_subdirs() {
   return 0
 }
 
+#
+# MAIN
+#
+
 [ -z "$1" ] && { echo "need a path" ; exit 1 ; }
 [ ! -d "$1" ] && { echo "need a valid path" ; exit 1 ; }
 
-topdir="$(fullpath "$1")"
-echo "starting in $topdir"
-
+topdir="$(cd "$1" ; pwd -P)"
 check_subdirs "$topdir"
