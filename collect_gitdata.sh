@@ -84,14 +84,13 @@ check_subdirs() {
 # MAIN
 #
 
-
-[ -z "$1" ] && { echo "need a path" ; exit 1 ; }
+[ -z "$1" ]   && { echo "need a path" ; exit 1 ; }
 [ ! -d "$1" ] && { echo "need a valid path" ; exit 1 ; }
 
 depth=""
 if [ -n "$2" ]; then
   case $2 in
-    ''|*[!0-9]*) echo "not a number" ; exit 1 ;;
+    *[!0-9]*) echo "not a number" ; exit 1 ;;
     *) depth=$2 ;;
   esac
 else
@@ -100,4 +99,4 @@ else
 fi
 
 topdir="$(cd "$1" ; pwd -P)"
-check_subdirs "$topdir" "$depth"
+check_subdirs "$topdir" $depth
