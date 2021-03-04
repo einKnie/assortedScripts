@@ -48,6 +48,32 @@ In case the track number is not found, the file will keep its original name.
 
 Starting at a given directory, this script recursively checks every subdirectory and lists information on every found git repository.
 
+The script takes two arguments, the starting directory and the desired depth to check for subdirectories. If depth is not provided, the script will recurse indefinitely, until no further subdirectories are found.
+
+**Beware:** Infinite depth may take a while, depending on the folder strucure.
+
+##### Usage
+
+````
+> ./collect_gitdata.sh ~/projects/ 1
+````
+Check only toplevel folders in ~/projects/, e.g. ~/projects/some_project
+
+````
+> ./collect_gitdata.sh ~/projects/ 2
+````
+Check first- and second-level subdirectories of ~/projects/, e.g. ~/projects/javascript/zensur
+
+````
+> ./collect_gitdata.sh ~/projects/ <n>
+```` 
+Check \<n> levels of subdirectories of ~/projects/
+
+````
+> ./collect_gitdata.sh ~/projects/
+```` 
+Check all descendent subdirectories of ~/projects/
+
 ##### Example
 
 ````
@@ -83,6 +109,8 @@ remote: https://github.com/einKnie/vpn_status.git
 hash:   9d800caf5e612174a2782d83f146b6edb234c604
 tags/heads:
 9d800caf5e612174a2782d83f146b6edb234c604 refs/heads/monitoring_mode
+
+...
 
 >
 
