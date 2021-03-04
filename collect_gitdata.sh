@@ -8,7 +8,7 @@
 
 is_git_dir() {
   if [ -d "$1/.git" ] ;then
-    if $(git -C "$1/" status &>/dev/null) ; then
+    if $(git -C "$1/" status &>/dev/null) ;then
       return 0
     fi
   fi
@@ -55,7 +55,7 @@ check_subdirs() {
 
       popd &>/dev/null
 
-    elif $(is_svn_dir "$(pwd)/$d") ; then
+    elif $(is_svn_dir "$(pwd)/$d") ;then
       pushd "./$d" &>/dev/null
 
       repourl="$(svn info --show-item repos-root-url 2>/dev/null)"
@@ -87,15 +87,12 @@ check_subdirs() {
 [ -z "$1" ]   && { echo "need a path" ; exit 1 ; }
 [ ! -d "$1" ] && { echo "need a valid path" ; exit 1 ; }
 
-depth=""
-if [ -n "$2" ]; then
+depth="-1"
+if [ -n "$2" ] ;then
   case $2 in
-    *[!0-9]*) echo "not a number" ; exit 1 ;;
+    *[!0-9]*) echo "depth must be numeric" ; exit 1 ;;
     *) depth=$2 ;;
   esac
-else
-  # set depth to -1 in order to keep going until no further subdirs are found
-  depth="-1"
 fi
 
 topdir="$(cd "$1" ; pwd -P)"
