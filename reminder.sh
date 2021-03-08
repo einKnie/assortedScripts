@@ -32,7 +32,6 @@ linktext="You wanted me to remind you of this"
 
 # set a reboot cron job
 set_cron() {
-
   own_cmd="$ownpath --off -m \"$1\""
   timeout="10"
   cmd="@reboot sleep $timeout && DISPLAY=:0 $remind_cmd\"$1\" && $own_cmd"
@@ -46,7 +45,6 @@ set_cron() {
 
 # unset a reboot cron job
 unset_cron() {
-
   cmd="${remind_cmd}\"$1\""
 
   crontab -l > "$origfile"
@@ -58,7 +56,6 @@ unset_cron() {
 # set a timer
 set_timer() {
   cmd="DISPLAY=:0 $remind_cmd\"$1\""
-
   at -t "$2" <<EOF
   $cmd
 EOF
@@ -84,7 +81,6 @@ show_info() {
 
 # parse time from caller (format: [xm yh zd])
 parse_time() {
-
   if [ "$(echo "$1" | sed -r 's/[0-9mMhHdD[:space:]]*//g')" != "" ] ;then
     return 1
   fi
@@ -96,8 +92,6 @@ parse_time() {
   [ "$m" == "" ] && m=0
   [ "$h" == "" ] && h=0
   [ "$d" == "" ] && d=0
-
-  #echo "$m min, $h hours, $d days"
 
   if [ "$(($m + $h + $d))" -eq 0 ] ;then
     return 1
@@ -194,8 +188,7 @@ if [ "$op" -eq 1 ] ;then
     
     timer_time="$(parse_time "$time_str")"
     if [ -z "$timer_time" ] ;then
-      [ $interactive -eq 0 ] && { echo "invalid time set" ; print_help ; } 
-      [ $interactive -eq 1 ] && show_note "Invalid time. Aborting"
+      [ $interactive -eq 0 ] && { echo "invalid time set" ; print_help ; } || { show_note "Invalid time. Aborting." ; } 
       exit 1
     fi
 
