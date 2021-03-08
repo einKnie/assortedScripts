@@ -86,7 +86,6 @@ show_info() {
 parse_time() {
 
   if [ "$(echo "$1" | sed -r 's/[0-9mMhHdD[:space:]]*//g')" != "" ] ;then
-    #echo "invalid time string"
     return 1
   fi
 
@@ -101,7 +100,6 @@ parse_time() {
   #echo "$m min, $h hours, $d days"
 
   if [ "$(($m + $h + $d))" -eq 0 ] ;then
-    #echo "invalid time set"
     return 1
   fi
 
