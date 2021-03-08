@@ -24,7 +24,8 @@ message=""
 op=-1
 timer=0
 time_str=""
-timer_time=""
+#timer_time=""
+interactive=0
 
 link=0
 linktext="You wanted me to remind you of this"
@@ -56,23 +57,9 @@ unset_cron() {
 
 # set a timer
 set_timer() {
-  interactive=0
-  if [ "$time_str" == "" ] ;then
-    interactive=1
-    time_str="$(get_input "When?")"
-    [ $? -eq 1 ] && return 1
-  fi
-
-  if ! parse_time "$time_str" ;then
-    if [ $interactive -eq 1 ] ;then
-      show_note "Invalid time. Aborting"
-    fi
-    return 1
-  fi
-
   cmd="DISPLAY=:0 $remind_cmd\"$1\""
 
-  at -t "$timer_time" <<EOF
+  at -t "$2" <<EOF
   $cmd
 EOF
 }
@@ -99,7 +86,7 @@ show_info() {
 parse_time() {
 
   if [ "$(echo "$1" | sed -r 's/[0-9mMhHdD[:space:]]*//g')" != "" ] ;then
-    echo "invalid time string"
+    #echo "invalid time string"
     return 1
   fi
 
@@ -111,21 +98,21 @@ parse_time() {
   [ "$h" == "" ] && h=0
   [ "$d" == "" ] && d=0
 
-  echo "$m min, $h hours, $d days"
+  #echo "$m min, $h hours, $d days"
 
   if [ "$(($m + $h + $d))" -eq 0 ] ;then
-    echo "invalid time set"
+    #echo "invalid time set"
     return 1
   fi
 
-  timer_time="$(date -d "$(date +'%D %T') $m minutes $h hours $d days" +'%Y%m%d%H%M.%S')"
+  echo "$(date -d "$(date +'%D %T') $m minutes $h hours $d days" +'%Y%m%d%H%M.%S')"
   return 0
 
 }
 
 print_help() {
   echo
-  echo "reminder v0.3"
+  echo "reminder v0.4"
   echo
   echo "$0 --on | --off [ --message <message> -t <time> ]"
   echo
@@ -142,7 +129,7 @@ print_help() {
   echo " note:"
   echo "  if -t is omitted, a reminder is set for next reboot."
   echo "  if no message is provided, the user in queried interactively."
-  echo "  same goes for -t time, if -t is specified without a time string"
+  echo "  same goes for -t time, in case -t is specified without a time string"
 }
 
 ### SCRIPT START
@@ -193,22 +180,30 @@ while [ "$#" -ne 0 ] ;do
   esac
 done
 
-if [ $link -eq 1 ] && [ -n "$message" ];then
-  message="<a href='$message'>$linktext</a>"
-fi
+# query message if not given via command line
+[ -n "$message" ] || message="$(get_input "Remind you of what, excactly?")"
+[ -n "$message" ] || exit 0
 
-# execute arguments
+# transform message to clickable link
+[ $link -eq 1 ] && message="<a href='$message'>$linktext</a>"
+
+# execute operation
 if [ "$op" -eq 1 ] ;then
-
-  if [ -z "$message" ] ;then
-    # query message from user
-    message="$(get_input "Remind you of what, exactly?")"
-    [ $? -eq 1 ] && exit 0
-  fi
-
   if [ "$timer" -eq 1 ] ;then
-    set_timer "$message" && show_info "timer set for $(echo $timer_time | sed -r 's/^([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}).*$/\3.\2.\1, \4:\5/g')"
+    # set timer
+    [ -n "$time_str" ] || { interactive=1 ; time_str="$(get_input "When?")" ; }
+    [ -n "$time_str" ] || exit 0
+    
+    timer_time="$(parse_time "$time_str")"
+    if [ -z "$timer_time" ] ;then
+      [ $interactive -eq 0 ] && { echo "invalid time set" ; print_help ; } 
+      [ $interactive -eq 1 ] && show_note "Invalid time. Aborting"
+      exit 1
+    fi
+
+    set_timer "$message" "$timer_time" && show_info "timer set for $(echo $timer_time | sed -r 's/^([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}).*$/\3.\2.\1, \4:\5/g')"
   else
+    # set reboot reminder via cron
     set_cron "$message"
   fi
 
