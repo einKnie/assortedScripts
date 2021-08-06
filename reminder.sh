@@ -15,7 +15,8 @@
 
 dir="$(cd "$(dirname "$0")"; pwd -P)"
 ownpath="$dir/"$(basename "$0")""
-remind_cmd="zenity --info --no-wrap --text="
+ownname="$(basename "$ownpath")"
+remind_cmd="zenity --info --no-wrap --title=${ownname%\.sh} --text="
 
 origfile="$dir/original"
 testfile="$dir/tmp"
