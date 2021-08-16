@@ -31,6 +31,18 @@ interactive=0
 link=0
 linktext="You wanted me to remind you of this"
 
+check_prereqs() {
+  err=0
+  for prog in $@; do
+    if ! which $prog &>/dev/null; then
+      echo "required program $prog not found on system."
+      ((err++))
+    fi
+  done
+
+  return $err
+}
+
 # set a reboot cron job
 set_cron() {
   own_cmd="$ownpath --off -m \"$1\""
@@ -173,6 +185,25 @@ while [ "$#" -ne 0 ] ;do
   esac
 done
 
+if ! check_prereqs notify-send at zenity; then
+  echo "Aborting"
+  exit 1
+fi
+
+if [ "$op" -lt 0 ] || [ "$op" -gt 1 ]; then
+  echo "no (valid) operation set!"
+  print_help
+  exit 1
+fi
+
+if [ "$timer" -eq 0 ]; then
+if ! check_prereqs cron; then
+      echo "Cron is not available on this system"
+      show_info "Cron is not available on this system"
+      exit 1
+    fi
+fi
+
 # query message if not given via command line
 [ -n "$message" ] || message="$(get_input "Remind you of what, excactly?")"
 [ -n "$message" ] || exit 0
@@ -201,10 +232,6 @@ if [ "$op" -eq 1 ] ;then
 
 elif [ "$op" -eq 0 ] ;then
     unset_cron "$message"
-else
-  echo "no (valid) operation set!"
-  print_help
-  exit 1
 fi
 
 exit $?
