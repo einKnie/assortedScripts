@@ -9,7 +9,13 @@
 # worst case simultaneously, and keep the notes synchronized, available on both devices, and w/o loss.
 # preliminary idea:
 # git stash && git pull && git stash pop && git status || git add * && git commit -m "$action $node $date" && git push
-# ----------------------
+# ---------------------
+# todo:
+# - possibility to generate commit message from tokens, e.g. 
+# commit= "automatic commit from $ME on $NODENAME" and the script replaces $ME w/ scriptname && $NODENAME $hostname
+# - better cfg file parsing: no params are required, do not err our when no workdir found etc.
+# - implement caller notification in case of merge conflict
+# - better auto mode: more error checking, dealing w/ errors etc.
 
 # try this concept:
 # file-global variable, every function writes relevant output to this variable
