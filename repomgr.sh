@@ -144,16 +144,17 @@ print_help() {
   echo " -h                ... print this help"
   echo ""
   echo "* config file:"
-  echo "  provide settings via file. generate a default file with -c "
+  echo "  provide settings via file. generate a default file with -c \"\""
   echo ""
 }
 
 print_cfg() {
   # print the current settings
-  log "repo:          $maindir"
-  log "remote branch: $branch"
-  log -n "using config:  "
+  log "repo:           $maindir"
+  log "remote branch:  $branch"
+  log -n "using config:   "
   [ "$cfg" == "" ] && { log "none"; } || { log "$cfg"; }
+  log "commit message: $commit"
   log ""
 
   [ $debug -eq 0 ] && return 0
@@ -204,6 +205,13 @@ parse_cfg() {
     branch="$tmpbr"
   fi
 
+  # commit message optional
+  tmpmsg="$(cat $file | grep commit | sed -r 's/^.*commit:\s*(.*)$/\1/g')"
+  logdbg "parsed commit message: $tmpmsg"
+  if [ -n "$tmpmsg" ]; then
+    commit="$tmpmsg"
+  fi
+
   [ $err -gt 0 ] && return 1
   return 0
 
@@ -216,6 +224,7 @@ maindir="$(pwd)"
 branch="master"
 cfg=""
 scriptname="$0"
+commit="automatic push by $scriptname"
 
 # parameter parsing
 err=0
@@ -255,9 +264,10 @@ done
 # - more parameters for specific actions (update, push, etc...)i
 
 if [ "$cfg" != "" ] ; then
-  parse_cfg "$cfg" && { print_cfg; } || { logerr "Failed to parse provided config file"; exit 1; }
+  parse_cfg "$cfg" || { logerr "Failed to parse provided config file"; exit 1; }
 fi
 
+print_cfg
 pushd "$maindir" &>/dev/null
 
 print_info
