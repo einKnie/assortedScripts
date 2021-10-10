@@ -130,7 +130,8 @@ print_info() {
 push_local() {
 
   # commit && push local changes
-  return 0
+  git add * && git commit -m "$commit" && git push 
+  return $?
 }
 
 print_help() {
@@ -228,7 +229,7 @@ commit="automatic push by $scriptname"
 
 # parameter parsing
 err=0
-while getopts "d:b:c:qvh" arg; do
+while getopts "d:b:c:aqvh" arg; do
   case $arg in
     d)
       [ -d "$OPTARG" ] && { maindir="$(realpath $OPTARG)"; } || { logerr "-d not a directory"; ((err++)); }
@@ -243,6 +244,9 @@ while getopts "d:b:c:qvh" arg; do
         generate_cfg "$cfg_dflt" && tmp="$cfg_dflt"
       fi
       [ -f "$tmp" ] && { cfg="$tmp"; } || { logerr "-c config file not found;"; ((err++)); }
+      ;;
+    a)
+      auto=1
       ;;
     q)
       quiet=1
@@ -272,4 +276,18 @@ pushd "$maindir" &>/dev/null
 
 print_info
 
+ret=0
+if [ $auto -eq 1 ]; then
+  if remote_has_changes ; then
+    fetch_remote || { logerr "failed to apply remot echanges"; ((err++)); }
+  fi
+
+  if local_has_changes; then
+    push_local || { logerr "failed to push local changes"; ((err++)); }
+  fi
+
+  [ $err -gt 0 ] && { logerr "experienced errors"; ret=1; }
+fi
+
 popd &>/dev/null
+exit $ret
