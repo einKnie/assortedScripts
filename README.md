@@ -289,6 +289,39 @@ will remind you to mind the stove in five minutes.
 
 ---
 
+### [reomgr.sh](repomgr.sh)
+
+Provides simple automatic repo management.
+I use this to automatically push changes to a repository from different nodes.
+
+#### Usage
+
+```
+ -d <path>  ... the git directory [ default: pwd ]
+ -b <name>  ... remote branch to track [ default: master ]
+ -c <path>  ... path to config file * (optional, overrides -d and -b)
+ -a         ... automatic - pull && push changes as they come
+ -q         ... quiet, print only error messages
+ -v         ... verbose, print debug messages
+ -h         ... print this help
+```
+
+A default config file may be generated (as `$PWD/.repocfg`) by calling:
+```
+repomgr.sh -c ""
+```
+
+The config file allows a number of options:
+
+```
+workdir: /path/to/repo
+branch: branchname
+commit: The default commit message to use for commits performed by this script
+
+```
+
+---
+
 ### [setdns.sh](setdns.sh)
 
 The script provides an interface to add or remove DNS entries from the current active network connection, using nmcli.  
