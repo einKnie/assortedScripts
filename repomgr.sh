@@ -33,9 +33,12 @@ log() {
 }
 
 is_git() { 
-  # check if pwd is a git repository
-  git rev-parse --git-dir &>/dev/null && return 0
-  return 1
+  # check if $1 is a git repository
+  local ret=1
+  pushd "$1" &>/dev/null
+  git rev-parse --git-dir &>/dev/null && ret=0
+  popd &>/dev/null
+  return $ret
 }
 
 has_remote() {
@@ -95,32 +98,32 @@ fetch_remote() {
 }
 
 print_info() {
+  # shot basic info about repo
+  if is_git . ; then
 
-if is_git ; then
+    if ! has_remote ; then
+      logerr "no connection to remote!"
+    fi
 
-  if ! has_remote ; then
-    logerr "no connection to remote!"
-  fi
+    if local_has_changes ; then
+      log "local changes detected:"
+      log "$output"
+    else
+      log "worktree clean"
+    fi
+    logdbg "$output"
 
-  if local_has_changes ; then
-    log "local changes detected:"
-    log "$output"
+    if remote_has_changes; then
+      log "remote changes detected:"
+      log "$output commits behind target branch"
+    else
+      log "up to date with remote"
+    fi
+    logdbg "$output"
+
   else
-    log "worktree clean"
+    log "this is not a git repo"
   fi
-  logdbg "$output"
-
-  if remote_has_changes; then
-    log "remote changes detected:"
-    log "$output commits behind target branch"
-  else
-    log "up to date with remote"
-  fi
-  logdbg "$output"
-
-else
-  log "this is not a git repo"
-fi
 
 }
 
@@ -135,15 +138,22 @@ print_help() {
   echo ""
   echo " -d <path/to/repo> ... git repo on which to perform operations"
   echo " -b <branch name>  ... remote branch name [default: master]"
+  echo " -c <cfg file>     ... provide a config file *"
   echo " -q                ... quiet, no regular log output"
   echo " -v                ... enable debug output"
   echo " -h                ... print this help"
   echo ""
+  echo "* config file:"
+  echo "  provide settings via file. generate a default file with -c "
+  echo ""
 }
 
-print_config() {
+print_cfg() {
+  # print the current settings
   log "repo:          $maindir"
   log "remote branch: $branch"
+  log -n "using config:  "
+  [ "$cfg" == "" ] && { log "none"; } || { log "$cfg"; }
   log ""
 
   [ $debug -eq 0 ] && return 0
@@ -154,21 +164,76 @@ print_config() {
   log ""
 }
 
+generate_cfg() {
+  # generate a config file $1 with the current settings
+  local file=""
+
+  [ -n "$1" ] && { file="$1"; } || { logerr "gencfg no filename provided"; return 1; }
+
+  [ -f "$file" ] && { logerr "gencfg: file exists $file"; return 1; }
+
+  echo "workdir: $maindir" >> "$file"
+  echo "branch: $branch" >> "$file"
+}
+
+parse_cfg() {
+  # parse a config file $1 and apply settings if valid
+  local file=""
+  logdbg "trying to parse provided cfg $1"
+
+  [ -n "$1" ] && { file="$1"; } || { logerr "genparse no filename provided"; return 1; }
+  [ -f "$file" ] || { logerr "genparse: file not found $file"; return 1; }
+
+  tmpdir="$(realpath $(cat $file | grep workdir | sed -r 's/^.*workdir:\s*(.*)$/\1/g'))"
+  logdbg "parsed workdir: $tmpdir"
+  if [ -d "$tmpdir" ] && is_git "$tmpdir" ; then
+    logdbg "cfg workdir valid"
+    maindir="$tmpdir"
+  else
+    logerr "cfg workdir invalid"
+    ((err++))
+  fi
+
+  tmpbr="$(cat $file | grep branch | sed -r 's/^.*branch:\s*(.*)$/\1/g')"
+  logdbg "parsed branch: $tmpbr"
+  if [ -z "$tmpbr" ] || [[ $tmpbr =~ [[space]] ]]; then
+    logerr "cfg invalid branch name $tmpbr"
+    ((err++))
+  else
+    logdbg "cfg branch valid: $tmpbr"
+    branch="$tmpbr"
+  fi
+
+  [ $err -gt 0 ] && return 1
+  return 0
+
+}
+
 
 # defaults
+cfg_dflt=".repocfg"
 maindir="$(pwd)"
 branch="master"
+cfg=""
 scriptname="$0"
 
 # parameter parsing
 err=0
-while getopts "d:b:qvh" arg; do
+while getopts "d:b:c:qvh" arg; do
   case $arg in
     d)
-      [ -d "$OPTARG" ] && { maindir="$OPTARG"; } || { logerr "-d not a directory"; ((err++)); }
+      [ -d "$OPTARG" ] && { maindir="$(realpath $OPTARG)"; } || { logerr "-d not a directory"; ((err++)); }
       ;;
     b)
       branch="$OPTARG"
+      ;;
+    c)
+      tmp="$OPTARG"
+      if [ "$tmp" == "" ]; then
+        logdbg "generating default config file"
+        generate_cfg "$cfg_dflt" && tmp="$cfg_dflt"
+      fi
+      [ -f "$tmp" ] && { cfg="$tmp"; } || { logerr "-c config file not found;"; ((err++)); }
       ;;
     q)
       quiet=1
@@ -187,9 +252,11 @@ done
 
 
 # TODOs:
-# - more parameters for specific actions (update, push, etc...)
+# - more parameters for specific actions (update, push, etc...)i
 
-print_config
+if [ "$cfg" != "" ] ; then
+  parse_cfg "$cfg" && { print_cfg; } || { logerr "Failed to parse provided config file"; exit 1; }
+fi
 
 pushd "$maindir" &>/dev/null
 
