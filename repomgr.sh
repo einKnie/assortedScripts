@@ -232,6 +232,7 @@ branch="master"
 cfg=""
 scriptname="$0"
 commit="automatic push by $scriptname"
+auto=0
 
 # parameter parsing
 err=0
