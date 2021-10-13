@@ -25,6 +25,15 @@ output=""
 debug=0
 quiet=0
 
+# defaults
+owndir="$(cd "$(dirname "$0")"; pwd -P)"
+scriptname="$(basename $0)"
+maindir="$owndir"
+branch="master"
+cfg="$HOME/.config/repomgr/.cfg"
+commit="automatic commit by $scriptname on $HOSTNAME"
+auto=0
+
 logdbg() {
   [ $debug -eq 1 ] && echo "$@"
 }
@@ -145,13 +154,14 @@ print_help() {
   echo ""
   echo " -d <path/to/repo> ... git repo on which to perform operations"
   echo " -b <branch name>  ... remote branch name [default: master]"
-  echo " -c <cfg file>     ... provide a config file *"
+  echo " -c                ... generate a default config file *"
   echo " -q                ... quiet, no regular log output"
   echo " -v                ... enable debug output"
   echo " -h                ... print this help"
   echo ""
   echo "* config file:"
-  echo "  provide settings via file. generate a default file with -c \"\""
+  echo "  if a cfg file exists at $cfg, it is parsed"
+  echo "  but will be overridden by cmd line params."
   echo ""
 }
 
@@ -159,8 +169,6 @@ print_cfg() {
   # print the current settings
   log "repo:           $maindir"
   log "remote branch:  $branch"
-  log -n "using config:   "
-  [ "$cfg" == "" ] && { log "none"; } || { log "$cfg"; }
   log "commit message: $commit"
   log ""
 
@@ -180,8 +188,11 @@ generate_cfg() {
 
   [ -f "$file" ] && { logerr "gencfg: file exists $file"; return 1; }
 
+  [ -d "$(dirname $file)" ] | mkdir -p "$(dirname $file)"
+
   echo "workdir: $maindir" >> "$file"
   echo "branch: $branch" >> "$file"
+  echo "commit: $commit" >> "$file"
 }
 
 parse_cfg() {
@@ -225,18 +236,16 @@ parse_cfg() {
 }
 
 
-# defaults
-cfg_dflt=".repocfg"
-maindir="$(pwd)"
-branch="master"
-cfg=""
-scriptname="$0"
-commit="automatic push by $scriptname"
-auto=0
-
 # parameter parsing
 err=0
-while getopts "d:b:c:aqvh" arg; do
+
+# if a config file exists at the default location, parse that first
+# so we can overwrite the default cfg file values w/ cmd line params (if given)
+if [ -f "$cfg" ]; then
+  parse_cfg "$cfg" || { logerr "could not parse cfg file at $cfg"; ((err++)); }
+fi
+
+while getopts "d:b:caqvh" arg; do
   case $arg in
     d)
       [ -d "$OPTARG" ] && { maindir="$(realpath $OPTARG)"; } || { logerr "-d not a directory"; ((err++)); }
@@ -245,12 +254,12 @@ while getopts "d:b:c:aqvh" arg; do
       branch="$OPTARG"
       ;;
     c)
-      tmp="$OPTARG"
-      if [ "$tmp" == "" ]; then
-        logdbg "generating default config file"
-        generate_cfg "$cfg_dflt" && tmp="$cfg_dflt"
+      if [ -f "$cfg" ]; then
+        logerr "cfg file already exists at $(dirname "$cfg")"
+        ((err++))
+      else
+        generate_cfg "$cfg" || { logerr "could not create default cfg at $cfg"; ((err++)); }
       fi
-      [ -f "$tmp" ] && { cfg="$tmp"; } || { logerr "-c config file not found;"; ((err++)); }
       ;;
     a)
       auto=1
@@ -268,15 +277,12 @@ while getopts "d:b:c:aqvh" arg; do
   esac
 done
 
-[ $err -gt 0 ] && { logerr "invalid parameter(s) provided. aborting."; exit 1; }
-
-
-# TODOs:
-# - more parameters for specific actions (update, push, etc...)i
-
-if [ "$cfg" != "" ] ; then
-  parse_cfg "$cfg" || { logerr "Failed to parse provided config file"; exit 1; }
+if ! is_git "$maindir" ; then
+  logerr "$maindir is not a git repo"
+  ((err++))  
 fi
+
+[ $err -gt 0 ] && { logerr "invalid parameter(s) provided. aborting."; exit 1; }
 
 print_cfg
 pushd "$maindir" &>/dev/null
