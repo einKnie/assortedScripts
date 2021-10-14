@@ -16,16 +16,16 @@
 # - better cfg file parsing: no params are required, do not err our when no workdir found etc.
 # - implement caller notification in case of merge conflict
 # - better auto mode: more error checking, dealing w/ errors etc.
+# ---------------------
 
 # try this concept:
 # file-global variable, every function writes relevant output to this variable
 # and thus, output may be parsed after call, if necessary, depending on return value
 output=""
 
+# defaults
 debug=0
 quiet=0
-
-# defaults
 owndir="$(cd "$(dirname "$0")"; pwd -P)"
 scriptname="$(basename $0)"
 maindir="$owndir"
@@ -105,7 +105,7 @@ fetch_remote() {
 
     git pull || { logerr "failed to pull remote changes"; ret=1; }
 
-    if [ has_stash -eq 1 ]; then
+    if [ $has_stash -eq 1 ]; then
         git stash pop || { logerr "failed to pop stash"; return 1; }
     fi
 
@@ -143,7 +143,6 @@ print_info() {
 }
 
 push_local() {
-
   # commit && push local changes
   git add * && git commit -m "$commit" && git push 
   return $?
@@ -284,15 +283,14 @@ fi
 
 [ $err -gt 0 ] && { logerr "invalid parameter(s) provided. aborting."; exit 1; }
 
-print_cfg
+[ $debug -eq 1 ] && print_cfg
 pushd "$maindir" &>/dev/null
-
 print_info
 
 ret=0
 if [ $auto -eq 1 ]; then
   if remote_has_changes ; then
-    fetch_remote || { logerr "failed to apply remot echanges"; ((err++)); }
+    fetch_remote || { logerr "failed to apply remote echanges"; ((err++)); }
   fi
 
   if local_has_changes; then
