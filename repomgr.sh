@@ -30,7 +30,7 @@ owndir="$(cd "$(dirname "$0")"; pwd -P)"
 scriptname="$(basename $0)"
 maindir="$owndir"
 branch="master"
-cfg="$HOME/.config/repomgr/.cfg"
+cfg="$HOME/.config/repomgr/repomgr"
 commit="automatic commit by $scriptname on $HOSTNAME"
 auto=0
 
@@ -50,6 +50,8 @@ log() {
 is_git() { 
   # check if $1 is a git repository
   local ret=1
+  [ -d "$1" ] || { logerr "not a directory"; return 1; }
+
   pushd "$1" &>/dev/null
   git rev-parse --git-dir &>/dev/null && ret=0
   popd &>/dev/null
@@ -184,14 +186,18 @@ generate_cfg() {
   local file=""
 
   [ -n "$1" ] && { file="$1"; } || { logerr "gencfg no filename provided"; return 1; }
-
   [ -f "$file" ] && { logerr "gencfg: file exists $file"; return 1; }
 
-  [ -d "$(dirname $file)" ] | mkdir -p "$(dirname $file)"
-
-  echo "workdir: $maindir" >> "$file"
-  echo "branch: $branch" >> "$file"
-  echo "commit: $commit" >> "$file"
+  [ -d "$(dirname $file)" ] || mkdir -p "$(dirname $file)"
+  
+  echo "# This is the default config file for repomgr.sh" > "$file"
+  echo "#" >> "$file"
+  echo "# As long as this file exists, the repomgr script will parse configuration from it." >> "$file"
+  echo "# but command line arguments overwrite the file's settings." >> "$file"
+  echo "" >> "$file"
+  echo "<workdir> $maindir" >> "$file"
+  echo "<branch> $branch" >> "$file"
+  echo "<commit> $commit" >> "$file"
 }
 
 parse_cfg() {
@@ -202,7 +208,7 @@ parse_cfg() {
   [ -n "$1" ] && { file="$1"; } || { logerr "genparse no filename provided"; return 1; }
   [ -f "$file" ] || { logerr "genparse: file not found $file"; return 1; }
 
-  tmpdir="$(realpath $(cat $file | grep workdir | sed -r 's/^.*workdir:\s*(.*)$/\1/g'))"
+  tmpdir="$(realpath $(cat $file | grep '<workdir>' | sed -r 's/^<workdir>\s*(.*)$/\1/g'))"
   logdbg "parsed workdir: $tmpdir"
   if [ -d "$tmpdir" ] && is_git "$tmpdir" ; then
     logdbg "cfg workdir valid"
@@ -212,7 +218,7 @@ parse_cfg() {
     ((err++))
   fi
 
-  tmpbr="$(cat $file | grep branch | sed -r 's/^.*branch:\s*(.*)$/\1/g')"
+  tmpbr="$(cat $file | grep '<branch>' | sed -r 's/^<branch>\s*(.*)$/\1/g')"
   logdbg "parsed branch: $tmpbr"
   if [ -z "$tmpbr" ] || [[ $tmpbr =~ [[space]] ]]; then
     logerr "cfg invalid branch name $tmpbr"
@@ -223,7 +229,7 @@ parse_cfg() {
   fi
 
   # commit message optional
-  tmpmsg="$(cat $file | grep commit | sed -r 's/^.*commit:\s*(.*)$/\1/g')"
+  tmpmsg="$(cat $file | grep '<commit>' | sed -r 's/^<commit>\s*(.*)$/\1/g')"
   logdbg "parsed commit message: $tmpmsg"
   if [ -n "$tmpmsg" ]; then
     commit="$tmpmsg"
