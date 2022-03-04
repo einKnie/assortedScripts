@@ -238,15 +238,12 @@ done
 trap - SIGINT
 
 # ask to plot collected data
-if [ $AUTO -eq 0 ]; then
-  if [ $PLOT -eq 1 ]; then
-    read -p "Plot data? [y/N] " INPUT
-    if [ "$INPUT" == "y" ] || [ "$INPUT" == "Y" ]; then
-      plot
+if [ $PLOT -eq 1 ]; then
+    if [ $AUTO -eq 0 ]; then
+        read -p "Plot data? [Y/n] " INPUT
+        if [ "$INPUT" == "n" ] || [ "$INPUT" == "N" ]; then
+            exit 0
+        fi
     fi
-  fi
-else
-  plot
+    plot
 fi
-
-echo 
