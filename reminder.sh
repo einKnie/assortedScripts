@@ -32,175 +32,175 @@ link=0
 linktext="You wanted me to remind you of this"
 
 check_prereqs() {
-  err=0
-  for prog in $@; do
-    if ! which $prog &>/dev/null; then
-      echo "required program $prog not found on system."
-      ((err++))
-    fi
-  done
+    err=0
+    for prog in $@; do
+        if ! which $prog &>/dev/null; then
+            echo "required program $prog not found on system."
+            ((err++))
+        fi
+    done
 
-  return $err
+    return $err
 }
 
 # set a reboot cron job
 set_cron() {
-  own_cmd="$ownpath --off -m \"$1\""
-  timeout="10"
-  cmd="@reboot sleep $timeout && DISPLAY=:0 $remind_cmd\"$1\" && $own_cmd"
+    own_cmd="$ownpath --off -m \"$1\""
+    timeout="10"
+    cmd="@reboot sleep $timeout && DISPLAY=:0 $remind_cmd\"$1\" && $own_cmd"
 
-  crontab -l > "$origfile"
-  crontab -l > "$testfile"
-  echo "$cmd" >> "$testfile"
-  cat "$testfile" | crontab -
-  rm "$testfile"
+    crontab -l >"$origfile"
+    crontab -l >"$testfile"
+    echo "$cmd" >>"$testfile"
+    cat "$testfile" | crontab -
+    rm "$testfile"
 }
 
 # unset a reboot cron job
 unset_cron() {
-  cmd="${remind_cmd}\"$1\""
+    cmd="${remind_cmd}\"$1\""
 
-  crontab -l > "$origfile"
-  crontab -l > "$testfile"
-  cat "$testfile" | grep -v "$cmd" | crontab -
-  rm "$testfile"
+    crontab -l >"$origfile"
+    crontab -l >"$testfile"
+    cat "$testfile" | grep -v "$cmd" | crontab -
+    rm "$testfile"
 }
 
 # set a timer
 set_timer() {
-  cmd="DISPLAY=:0 $remind_cmd\"$1\""
-  at -t "$2" <<EOF
+    cmd="DISPLAY=:0 $remind_cmd\"$1\""
+    at -t "$2" <<EOF
   $cmd
 EOF
 }
 
 get_input() {
-  str="$(zenity --entry --text="$1")"
-  if [ "$str" == "" ] ;then
-    show_note "Aborted"
-    return 1
-  fi
-  echo "$str"
-  return 0
+    str="$(zenity --entry --text="$1")"
+    if [ "$str" == "" ]; then
+        show_note "Aborted"
+        return 1
+    fi
+    echo "$str"
+    return 0
 }
 
 show_note() {
-  $(zenity --info --no-wrap --text="$1")
+    $(zenity --info --no-wrap --text="$1")
 }
 
 show_info() {
-  $(notify-send "reminder" "$1")
+    $(notify-send "reminder" "$1")
 }
 
 # parse time from caller (format: [xm yh zd])
 parse_time() {
-  if [ "$(echo "$1" | sed -r 's/[0-9mMhHdD[:space:]]*//g')" != "" ] ;then
-    return 1
-  fi
+    if [ "$(echo "$1" | sed -r 's/[0-9mMhHdD[:space:]]*//g')" != "" ]; then
+        return 1
+    fi
 
-  m="$(echo "$1" | sed -r 's/([0-9]*)\s*[mM].*|./\1/g')"
-  h="$(echo "$1" | sed -r 's/([0-9]*)\s*[hH].*|./\1/g')"
-  d="$(echo "$1" | sed -r 's/([0-9]*)\s*[dD].*|./\1/g')"
+    m="$(echo "$1" | sed -r 's/([0-9]*)\s*[mM].*|./\1/g')"
+    h="$(echo "$1" | sed -r 's/([0-9]*)\s*[hH].*|./\1/g')"
+    d="$(echo "$1" | sed -r 's/([0-9]*)\s*[dD].*|./\1/g')"
 
-  [ "$m" == "" ] && m=0
-  [ "$h" == "" ] && h=0
-  [ "$d" == "" ] && d=0
+    [ "$m" == "" ] && m=0
+    [ "$h" == "" ] && h=0
+    [ "$d" == "" ] && d=0
 
-  if [ "$(($m + $h + $d))" -eq 0 ] ;then
-    return 1
-  fi
+    if [ "$((m + h + d))" -eq 0 ]; then
+        return 1
+    fi
 
-  echo "$(date -d "$(date +'%D %T') $m minutes $h hours $d days" +'%Y%m%d%H%M.%S')"
-  return 0
+    echo "$(date -d "$(date +'%D %T') $m minutes $h hours $d days" +'%Y%m%d%H%M.%S')"
+    return 0
 
 }
 
 print_help() {
-  echo
-  echo "reminder v0.4"
-  echo
-  echo "$0 --on | --off [ --message <message> -t <time> ]"
-  echo
-  echo " --on                 ... set a timer"
-  echo " --off                ... unset a timer [only if reboot timer]"
-  echo " -m | --message <str> ... set the reminder message string"
-  echo " -t | --time    <str> ... set time for timer"
-  echo "                          time must be quoted and in format \"5m 3h 1d\""
-  echo "                          -> 5 minutes, 3 hours, one day"
-  echo "                          (only non-zero values must be specified)"
-  echo " -l | --link          ... transform the message to a clickable link in the reminder"
-  echo " -h | --help              show this help screen"
-  echo
-  echo " note:"
-  echo "  if -t is omitted, a reminder is set for next reboot."
-  echo "  if no message is provided, the user in queried interactively."
-  echo "  same goes for -t time, in case -t is specified without a time string"
+    echo
+    echo "reminder v0.4"
+    echo
+    echo "$0 --on | --off [ --message <message> -t <time> ]"
+    echo
+    echo " --on                 ... set a timer"
+    echo " --off                ... unset a timer [only if reboot timer]"
+    echo " -m | --message <str> ... set the reminder message string"
+    echo " -t | --time    <str> ... set time for timer"
+    echo '                          time must be quoted and in format "5m 3h 1d"'
+    echo "                          -> 5 minutes, 3 hours, one day"
+    echo "                          (only non-zero values must be specified)"
+    echo " -l | --link          ... transform the message to a clickable link in the reminder"
+    echo " -h | --help              show this help screen"
+    echo
+    echo " note:"
+    echo "  if -t is omitted, a reminder is set for next reboot."
+    echo "  if no message is provided, the user in queried interactively."
+    echo "  same goes for -t time, in case -t is specified without a time string"
 }
 
 ### SCRIPT START
 
 # parse arguments
-while [ "$#" -ne 0 ] ;do
-  case "$1" in
-    --on)
-      op=1
-      shift
-      ;;
-    --off)
-      op=0
-      shift
-      ;;
-    -m | --message)
-      if [ -n "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
-        message="$2"
-        shift
-      fi
-      shift
-      ;;
-    -l | --link)
-      link=1
-      shift
-      ;;
-    -t | --time)
-      timer=1
-      if [ -n "$2" ] && [[ "${2:0:1}" != "-" ]] ;then
-        time_str="$2"
-        shift
-      fi
-      shift
-      ;;
-    -h |--help)
-      print_help
-      exit 0
-      ;;
-    --debug)
-      set -x
-      shift
-      ;;
-    *)
-      echo "invalid command"
-      print_help
-      exit 1
-      ;;
-  esac
+while [ "$#" -ne 0 ]; do
+    case "$1" in
+        --on)
+            op=1
+            shift
+            ;;
+        --off)
+            op=0
+            shift
+            ;;
+        -m | --message)
+            if [ -n "$2" ] && [[ ${2:0:1} != "-" ]]; then
+                message="$2"
+                shift
+            fi
+            shift
+            ;;
+        -l | --link)
+            link=1
+            shift
+            ;;
+        -t | --time)
+            timer=1
+            if [ -n "$2" ] && [[ ${2:0:1} != "-" ]]; then
+                time_str="$2"
+                shift
+            fi
+            shift
+            ;;
+        -h | --help)
+            print_help
+            exit 0
+            ;;
+        --debug)
+            set -x
+            shift
+            ;;
+        *)
+            echo "invalid command"
+            print_help
+            exit 1
+            ;;
+    esac
 done
 
 if ! check_prereqs notify-send at zenity; then
-  echo "Aborting"
-  exit 1
+    echo "Aborting"
+    exit 1
 fi
 
 if [ "$op" -lt 0 ] || [ "$op" -gt 1 ]; then
-  echo "no (valid) operation set!"
-  print_help
-  exit 1
+    echo "no (valid) operation set!"
+    print_help
+    exit 1
 fi
 
 if [ "$timer" -eq 0 ]; then
-if ! check_prereqs cron; then
-      echo "Cron is not available on this system"
-      show_info "Cron is not available on this system"
-      exit 1
+    if ! check_prereqs cron; then
+        echo "Cron is not available on this system"
+        show_info "Cron is not available on this system"
+        exit 1
     fi
 fi
 
@@ -212,25 +212,25 @@ fi
 [ $link -eq 1 ] && message="<a href='$message'>$linktext</a>"
 
 # execute operation
-if [ "$op" -eq 1 ] ;then
-  if [ "$timer" -eq 1 ] ;then
-    # set timer
+if [ "$op" -eq 1 ]; then
+    if [ "$timer" -eq 1 ]; then
+        # set timer
     [ -n "$time_str" ] || { interactive=1 ; time_str="$(get_input "When?")" ; }
-    [ -n "$time_str" ] || exit 0
-    
-    timer_time="$(parse_time "$time_str")"
-    if [ -z "$timer_time" ] ;then
+        [ -n "$time_str" ] || exit 0
+
+        timer_time="$(parse_time "$time_str")"
+        if [ -z "$timer_time" ]; then
       [ $interactive -eq 0 ] && { echo "invalid time set" ; print_help ; } || { show_note "Invalid time. Aborting." ; } 
-      exit 1
-    fi
+            exit 1
+        fi
 
     set_timer "$message" "$timer_time" && show_info "timer set for $(echo $timer_time | sed -r 's/^([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2}).*$/\3.\2.\1, \4:\5/g')"
-  else
-    # set reboot reminder via cron
-    set_cron "$message"
-  fi
+    else
+        # set reboot reminder via cron
+        set_cron "$message"
+    fi
 
-elif [ "$op" -eq 0 ] ;then
+elif [ "$op" -eq 0 ]; then
     unset_cron "$message"
 fi
 
