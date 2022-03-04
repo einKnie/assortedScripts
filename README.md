@@ -1,5 +1,5 @@
-
 # Assorted Scripts
+
 This is a collection of scripts I have written for my personal use.  
 I will probably add to it over time.
 
@@ -22,12 +22,12 @@ The script categorizes audio files into a folder structure <i>/\<artist>/\<album
 All valid audio files in the <i><b>source directory</b></i> are categorized and copied to their new location inside the <i><b>output directory</b></i>. If no output directory is given, what-if mode is enabled automatically.  
 <b>Note:</b> The output directory is created if it does not already exists.
 
-
 <b>The original files are not touched in any way! Files are copied to their respective destination and then renamed.</b>
 
 #### Example
+
 A song with the following metadata will be stored under
-<b>/TheBand/AnAmazingAlbum/04\_Best\_Song.mp3</b>
+<b>/TheBand/AnAmazingAlbum/04_Best_Song.mp3</b>
 
 ```
 [...]
@@ -45,7 +45,6 @@ In case the track number is not found, the file will keep its original name.
 
 ### [collect_gitdata.sh](collect_gitdata.sh)
 
-
 Starting at a given directory, this script recursively checks every subdirectory and lists information on every found git repository.
 
 The script takes two arguments, the starting directory and the desired depth to check for subdirectories. If depth is not provided, the script will recurse indefinitely, until no further subdirectories are found.
@@ -54,29 +53,33 @@ The script takes two arguments, the starting directory and the desired depth to 
 
 ##### Usage
 
-````
+```
 > ./collect_gitdata.sh ~/projects/ 1
-````
+```
+
 Check only toplevel folders in ~/projects/, e.g. ~/projects/some_project
 
-````
+```
 > ./collect_gitdata.sh ~/projects/ 2
-````
+```
+
 Check first- and second-level subdirectories of ~/projects/, e.g. ~/projects/javascript/zensur
 
-````
+```
 > ./collect_gitdata.sh ~/projects/ <n>
-```` 
+```
+
 Check \<n> levels of subdirectories of ~/projects/
 
-````
+```
 > ./collect_gitdata.sh ~/projects/
-```` 
+```
+
 Check all descendent subdirectories of ~/projects/
 
 ##### Example
 
-````
+```
 > ./collect_gitdata.sh ~/projects/
 path:   /home/einKnie/projects/gourmet
 remote: < no remote >
@@ -114,7 +117,7 @@ tags/heads:
 
 >
 
-````
+```
 
 ---
 
@@ -125,13 +128,12 @@ The visualisation of the collected data with gnuplot is built in.
 
 ##### Usage
 
-
 ```
--f, --file         |   output file (default /tmp/generic.log)  
+-f, --file         |   output file (default /tmp/generic.log)
                    |   If the file exists, you have the option to plot it
-                   |   instead of collecting data.  
+                   |   instead of collecting data.
 
--n, --name         |   set target by name   
+-n, --name         |   set target by name
 
 -p, --pid          |   set target by pid
 
@@ -143,7 +145,8 @@ The visualisation of the collected data with gnuplot is built in.
                    |   that resulted from your other parameters
 
 -h, --help         |   show this help message
-```  
+```
+
 ---
 
 ### [debugifier.sh](debugifier.sh)
@@ -153,7 +156,6 @@ The script adds simple debug output to a given bash script, and removes it again
 More specifically, the line
 `echo "in $(basename $BASH_SOURCE) ${FUNCNAME[0]}"` is added at the start of every defined function. This line outputs `in <filename> <functionname>`, allowing for a quick overview of the script flow, even across multiple files.
 
-
 #### Usage
 
 ```
@@ -161,7 +163,6 @@ More specifically, the line
 -o <1|0>         | operation
 
 ```
-
 
 #### Example
 
@@ -218,10 +219,10 @@ warning() {
 The debugifier works with all sorts of function definition styles, such as `function foo() {}`, `foo() {}`, or even `foo {}`.
 
 ---
+
 ### [diffscript.sh](diffscript.sh)
 
 The script runs two different executables with the same arguments and checks if there is a differece in the programs' output. Useful for refactoring.
-
 
 #### Usage
 
@@ -229,10 +230,9 @@ The script runs two different executables with the same arguments and checks if 
 -x1         | left-side executable
 -x2         | right-side executable
 -c          | commands for the two executables; should be in quotes
--q          | quiet, disable all output	 
+-q          | quiet, disable all output
 -h  --help  | show help screen
 ```
-
 
 #### Example
 
@@ -246,15 +246,14 @@ it's the same!
 >
 ```
 
-<b>Note:</b> The respective output of the tested executables can be found in the script's directory afterwards, as ``` ./res_left ``` and ``` ./res_right ```, respectively.
+<b>Note:</b> The respective output of the tested executables can be found in the script's directory afterwards, as `./res_left` and `./res_right`, respectively.
 In case the outputs differ, the diff result is also printed to stdout.
 
 ---
+
 ### [reminder.sh](reminder.sh)
 
-Set yourself a reminder, either for your next reboot, or after a set time.  
-
-
+Set yourself a reminder, either for your next reboot, or after a set time.
 
 #### Usage
 
@@ -264,27 +263,27 @@ Set yourself a reminder, either for your next reboot, or after a set time.
 -m --message  | the reminder
 -t --time     | time for timer, in format "5m 3h 1d" *
               |  -> 5 minutes, 3 hours, and 1 day
-              |  (only non-zero values need to be specified)	 
+              |  (only non-zero values need to be specified)
 -l --link     | treat the message as a link, making it clickable in the reminder window
 -h --help     | show help screen
 ```
 
-\* time may also be specified without whitespaces, in which case the string need not be quoted. __5m3h__ is a valid time string.  
+\* time may also be specified without whitespaces, in which case the string need not be quoted. **5m3h** is a valid time string.
 
-If __message__ is not set, the user will be queried via an entry window. The same holds true for __time__: if the _-t_ parameter is given without a time string, the user is queried for one.
+If **message** is not set, the user will be queried via an entry window. The same holds true for **time**: if the _-t_ parameter is given without a time string, the user is queried for one.
 
 #### Example
 
 ```
 > ./reminder.sh --on --message "Good morning!"
 ```
+
 will set a reminder for your next reboot with the message "Good morning!"
-
-
 
 ```
 > ./reminder.sh --on -t 5m --message "mind the stove!"
 ```
+
 will remind you to mind the stove in five minutes.
 
 ---
@@ -307,6 +306,7 @@ I use this to automatically push changes to a repository from different nodes.
 ```
 
 A default config file may be generated (as `$PWD/.repocfg`) by calling:
+
 ```
 repomgr.sh -c ""
 ```
