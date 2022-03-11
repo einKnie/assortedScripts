@@ -71,15 +71,8 @@ validate_avi() {
     log "monitor pid: $monitor"
 
     # wait for mplayer to stop
-    # and print a spinner to let user know that we're still working
-    local -a lin=('/' '-' '\' '|')
-    while [ -d "/proc/$mplay" ] ;do
-        echo -ne "${lin[i++ % ${#lin[@]}]}"
-        sleep 1
-        echo -ne "\b"
-    done
-    # space is necessary to overwrite last loop's \b
-    log " analysis complete"
+    wait_for_pid $mplay
+    log "analysis complete"
 
     # if no errors were found in the file, we need to reap the monitor
     if [ -d "/proc/$monitor" ]; then
@@ -93,6 +86,19 @@ validate_avi() {
         return 1
     fi
     return 0
+}
+
+# wait for the program with given pid to finish
+# and show a spinner
+wait_for_pid() {
+    local -a lin=('/' '-' '\' '|')
+    while [ -d "/proc/$1" ] ;do
+        echo -ne "${lin[i++ % ${#lin[@]}]}"
+        sleep 1
+        echo -ne "\b"
+    done
+    # space is necessary to overwrite last loop's \b
+    echo " "
 }
 
 # monitor mplayer output $1 and kill mplayer (pid: $2) on first error found
