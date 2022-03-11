@@ -49,10 +49,6 @@ validate_dir() {
     for dir in $(find . -maxdepth 1 -type d); do
         for file in "$(basename "$dir")"/*.avi ; do
             [ -f "$file" ] || continue
-
-            # dirty hack for testing
-            [ "$file" = "season1/101 - Pilot.avi" ] && continue
-
             validate_avi "$file"
         done
     done
