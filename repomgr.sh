@@ -143,7 +143,7 @@ print_info() {
 
 push_local() {
     # commit && push local changes
-    git add * && git commit -m "$commit" && git push
+    git add . && git commit -m "$commit" && git push
     return $?
 }
 
@@ -238,17 +238,30 @@ parse_cfg() {
 
 # parameter parsing
 err=0
+cfg_found=0
+repo_set=0
 
 # if a config file exists at the default location, parse that first
 # so we can overwrite the default cfg file values w/ cmd line params (if given)
 if [ -f "$cfg" ]; then
-    parse_cfg "$cfg" || { logerr "could not parse cfg file at $cfg"; ((err++)); }
+    if parse_cfg "$cfg" ;then
+      cfg_found=1
+    else
+      logerr "could not parse cfg file at $cfg"
+      ((err++))
+    fi
 fi
 
 while getopts "d:b:caqvh" arg; do
     case $arg in
         d)
-            [ -d "$OPTARG" ] && { maindir="$(realpath $OPTARG)"; } || { logerr "-d not a directory"; ((err++)); }
+            if [ -d "$OPTARG" ]; then
+              maindir="$(realpath $OPTARG)"
+              repo_set=1
+            else
+              logerr "-d not a directory"
+              ((err++))
+            fi
             ;;
         b)
             branch="$OPTARG"
@@ -277,12 +290,17 @@ while getopts "d:b:caqvh" arg; do
     esac
 done
 
+if [ $cfg_found -eq 0 -a $repo_set -eq 0 ]; then
+  logerr "need either a valid cfg file or at least the repo path set"
+  ((err++))
+fi
+
 if ! is_git "$maindir"; then
     logerr "$maindir is not a git repo"
     ((err++))
 fi
 
-[ $err -gt 0 ] && { logerr "invalid parameter(s) provided. aborting."; exit 1; }
+[ $err -gt 0 ] && { logerr "invalid parameter(s) provided. aborting."; print_help; exit 1; }
 
 [ $debug -eq 1 ] && print_cfg
 pushd "$maindir" &>/dev/null
